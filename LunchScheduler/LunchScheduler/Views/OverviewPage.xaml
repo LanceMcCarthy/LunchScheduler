@@ -1,0 +1,260 @@
+﻿<Page x:Name="Page"
+      x:Class="LunchScheduler.Views.OverviewPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:LunchScheduler.Views"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:viewModels="using:LunchScheduler.ViewModels"
+      xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+      xmlns:temporaryControls="using:LunchScheduler.TemporaryControls"
+      mc:Ignorable="d">
+
+    <Page.DataContext>
+        <viewModels:OverviewViewModel x:Name="ViewModel" />
+    </Page.DataContext>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <controls:MasterDetailsView ItemsSource="{Binding LunchAppointments}"
+                                    SelectedItem="{Binding SelectedLunch, Mode=TwoWay}"
+                                    NoSelectionContent="Add or select an appointment"
+                                    Grid.Row="0"
+                                    Grid.Column="0">
+            <controls:MasterDetailsView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="5">
+                        <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                        <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Guests:" Margin="0,0,5,0"/>
+                            <TextBlock Text="{Binding Guests.Count}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </controls:MasterDetailsView.ItemTemplate>
+            <controls:MasterDetailsView.DetailsTemplate>
+                <DataTemplate>
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Title}"
+                                       Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                       Style="{StaticResource HeaderTextBlockStyle}"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}"
+                                       Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                       Style="{StaticResource SubheaderTextBlockStyle}"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding Location.Name}"
+                                       Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                       Margin="0,10,0,0"
+                                       HorizontalAlignment="Center"
+                                       Style="{StaticResource TitleTextBlockStyle}" />
+                            <TextBlock Text="{Binding Location.Address}"
+                                       Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                       HorizontalAlignment="Center"
+                                       Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock Text="{Binding Location.PhoneNumber}" />
+                        </StackPanel>
+                        <GridView ItemsSource="{Binding Guests}"
+                                  SelectionMode="None"
+                                  Grid.Row="1"
+                                  Header="Guests">
+                            <GridView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}"
+                                                    Margin="0,10">
+                                            <Grid MinWidth="100">
+                                                <Path Data="M23.268969,23.126986L24.72997,23.126986 24.72997,28.5 23.268969,28.5z M23.998988,19.500005C24.550988,19.500005 24.998988,19.971001 24.998988,20.550995 24.998988,21.13099 24.550988,21.601985 23.998988,21.601985 23.446988,21.601985 22.998988,21.13099 22.998988,20.550995 22.998988,19.971001 23.446988,19.500005 23.998988,19.500005z M23.984991,18C20.668962,18 17.970972,20.69101 17.970973,24 17.970972,27.309021 20.668962,30 23.984991,30 27.300959,30 29.999986,27.309021 29.999986,24 29.999986,20.69101 27.300959,18 23.984991,18z M10.601985,15C5.8589916,15 1.9999971,18.829 1.9999971,23.536 1.9999971,24.895 3.1159954,26 4.4889936,26L16.224599,26 16.223715,25.9969C16.058748,25.358372 15.970979,24.68922 15.970979,24 15.970979,20.829586 17.828172,18.08383 20.513647,16.790126L20.610049,16.746549 20.332829,16.543528C18.894531,15.541328,17.180413,15,15.396978,15L12.998989,15z M12.998989,2C9.9409966,2 7.4530029,4.467 7.4530029,7.5 7.4530029,9.947 9.1079988,12.123 11.477993,12.791 12.46099,13.068 13.534987,13.069 14.520984,12.791 16.890978,12.122 18.544973,9.9460001 18.544973,7.5 18.544973,4.467 16.05698,2 12.998989,2z M12.998989,0C17.159977,0 20.544968,3.3640003 20.544968,7.5 20.544968,9.6899061 19.574254,11.720467 17.994865,13.115179L17.807245,13.274327 17.878778,13.290484C19.649835,13.712344,21.289907,14.584437,22.644967,15.846L22.882442,16.07606 22.965698,16.064396C23.299552,16.021905 23.639757,16 23.984991,16 28.403982,16 31.99998,19.588989 31.99998,24 31.99998,28.411011 28.403982,32 23.984991,32 21.085027,32 18.539919,30.454351 17.132828,28.145063L17.049176,28 4.4889936,28C2.0129967,28 0,25.997 0,23.536 0,18.633812 3.3851471,14.50334 7.9551611,13.33225L8.190886,13.274955 8.0041213,13.116582C6.4241533,11.721779 5.4530087,9.6905622 5.4530087,7.5 5.4530087,3.3640003 8.8379993,0 12.998989,0z"
+                                                      Stretch="Uniform"
+                                                      Fill="{ThemeResource CalendarViewSelectedBorderBrush}"
+                                                      Width="40"
+                                                      Height="40"
+                                                      Margin="0,0,0,0" />
+
+                                                <Ellipse Width="50"
+                                                         Height="50"
+                                                         Margin="10"
+                                                         Visibility="{Binding ThumbnailUri, Converter={StaticResource NullToVisibilityConverter}}">
+                                                    <Ellipse.Fill>
+                                                        <ImageBrush ImageSource="{Binding ThumbnailUri}" />
+                                                    </Ellipse.Fill>
+                                                </Ellipse>
+                                            </Grid>
+
+                                            <TextBlock Text="{Binding FullName}"
+                                                       Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                                       TextWrapping="Wrap"
+                                                       HorizontalAlignment="Center"
+                                                       Margin="0,0,0,10" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                            <GridView.ItemContainerStyle>
+                                <Style TargetType="GridViewItem">
+                                    <Setter Property="HorizontalAlignment"
+                                            Value="Stretch" />
+                                    <Setter Property="HorizontalContentAlignment"
+                                            Value="Stretch" />
+                                </Style>
+                            </GridView.ItemContainerStyle>
+                        </GridView>
+                    </Grid>
+                </DataTemplate>
+            </controls:MasterDetailsView.DetailsTemplate>
+            <controls:MasterDetailsView.NoSelectionContentTemplate>
+                <DataTemplate>
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <SymbolIcon RenderTransformOrigin=".5,.5"
+                                    Symbol="CalendarDay">
+                            <SymbolIcon.RenderTransform>
+                                <CompositeTransform ScaleX="2"
+                                                    ScaleY="2" />
+                            </SymbolIcon.RenderTransform>
+                        </SymbolIcon>
+                        <TextBlock Margin="0,12"
+                                   FontSize="24"
+                                   Text="{Binding}" />
+                    </StackPanel>
+                </DataTemplate>
+            </controls:MasterDetailsView.NoSelectionContentTemplate>
+        </controls:MasterDetailsView>
+        
+        <CommandBar Grid.Row="1"
+                    Grid.ColumnSpan="2">
+            <AppBarButton Icon="Add"
+                          Click="{x:Bind ViewModel.AddAppointmentAppBarButton_OnClick}" />
+        </CommandBar>
+
+        <Grid x:Name="AddLunchOverlay"
+              Visibility="{Binding AddAppointmentOverlayVisibility}"
+              Background="#DDFFFFFF"
+              Grid.RowSpan="2">
+            <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  BorderBrush="Black"
+                  BorderThickness="2"
+                  Padding="10"
+                  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="Create a lunch appointment"
+                               Margin="0,10,0,5"
+                               Foreground="{ThemeResource ApplicationForegroundThemeBrush}" />
+                    <TextBox x:Name="TitleTextBox"
+                             Text="{Binding LunchToAdd.Title, Mode=TwoWay}"
+                             PlaceholderText="enter title for appointment"
+                             Margin="0,10,0,10" />
+
+                    <TextBlock Text="Restaurant Details"
+                               Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                               Margin="0,10,0,5" />
+
+                    <TextBox Text="{Binding LunchToAdd.Location.Name, Mode=TwoWay}"
+                             PlaceholderText="name"
+                             Margin="0,0,0,10" />
+                    <TextBox Text="{Binding LunchToAdd.Location.Address, Mode=TwoWay}"
+                             AcceptsReturn="True"
+                             PlaceholderText="address"
+                             Margin="0,0,0,10" />
+                    <TextBox Text="{Binding LunchToAdd.Location.PhoneNumber, Mode=TwoWay}"
+                             PlaceholderText="phone"
+                             Margin="0,0,0,10" />
+
+                    <DatePicker x:Name="LunchDatePicker"
+                                Header="Select Date"
+                                Margin="0,0,0,10"
+                                HorizontalAlignment="Stretch"
+                                DateChanged="{x:Bind ViewModel.LunchToAdd_OnDateChanged}" />
+                    <TimePicker x:Name="LunchTimePicker"
+                                Header="Select Time"
+                                Margin="0,0,0,10"
+                                TimeChanged="{x:Bind ViewModel.LunchToAdd_OnTimeChanged}"
+                                HorizontalAlignment="Stretch" />
+
+                    <Button x:Name="AddLunchGuestButton"
+                            Content="Add Lunch Guest"
+                            Margin="0,10,0,0"
+                            Click="{x:Bind ViewModel.AddLunchGuestButton_OnClick}" />
+
+                    <ListView ItemsSource="{Binding LunchToAdd.Guests}"
+                              SelectionMode="None"
+                              Height="150"
+                              ScrollViewer.VerticalScrollMode="Disabled"
+                              ScrollViewer.HorizontalScrollMode="Enabled"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}">
+                                    <Grid>
+                                        <Path Data="M23.268969,23.126986L24.72997,23.126986 24.72997,28.5 23.268969,28.5z M23.998988,19.500005C24.550988,19.500005 24.998988,19.971001 24.998988,20.550995 24.998988,21.13099 24.550988,21.601985 23.998988,21.601985 23.446988,21.601985 22.998988,21.13099 22.998988,20.550995 22.998988,19.971001 23.446988,19.500005 23.998988,19.500005z M23.984991,18C20.668962,18 17.970972,20.69101 17.970973,24 17.970972,27.309021 20.668962,30 23.984991,30 27.300959,30 29.999986,27.309021 29.999986,24 29.999986,20.69101 27.300959,18 23.984991,18z M10.601985,15C5.8589916,15 1.9999971,18.829 1.9999971,23.536 1.9999971,24.895 3.1159954,26 4.4889936,26L16.224599,26 16.223715,25.9969C16.058748,25.358372 15.970979,24.68922 15.970979,24 15.970979,20.829586 17.828172,18.08383 20.513647,16.790126L20.610049,16.746549 20.332829,16.543528C18.894531,15.541328,17.180413,15,15.396978,15L12.998989,15z M12.998989,2C9.9409966,2 7.4530029,4.467 7.4530029,7.5 7.4530029,9.947 9.1079988,12.123 11.477993,12.791 12.46099,13.068 13.534987,13.069 14.520984,12.791 16.890978,12.122 18.544973,9.9460001 18.544973,7.5 18.544973,4.467 16.05698,2 12.998989,2z M12.998989,0C17.159977,0 20.544968,3.3640003 20.544968,7.5 20.544968,9.6899061 19.574254,11.720467 17.994865,13.115179L17.807245,13.274327 17.878778,13.290484C19.649835,13.712344,21.289907,14.584437,22.644967,15.846L22.882442,16.07606 22.965698,16.064396C23.299552,16.021905 23.639757,16 23.984991,16 28.403982,16 31.99998,19.588989 31.99998,24 31.99998,28.411011 28.403982,32 23.984991,32 21.085027,32 18.539919,30.454351 17.132828,28.145063L17.049176,28 4.4889936,28C2.0129967,28 0,25.997 0,23.536 0,18.633812 3.3851471,14.50334 7.9551611,13.33225L8.190886,13.274955 8.0041213,13.116582C6.4241533,11.721779 5.4530087,9.6905622 5.4530087,7.5 5.4530087,3.3640003 8.8379993,0 12.998989,0z"
+                                              Stretch="Uniform"
+                                              Fill="{ThemeResource CalendarViewSelectedBorderBrush}"
+                                              Width="40"
+                                              Height="40"
+                                              Margin="0,0,0,0" />
+
+                                        <Ellipse Width="50"
+                                                 Height="50"
+                                                 Margin="10"
+                                                 Visibility="{Binding ThumbnailUri, Converter={StaticResource NullToVisibilityConverter}}">
+                                            <Ellipse.Fill>
+                                                <ImageBrush ImageSource="{Binding ThumbnailUri}" />
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+                                    </Grid>
+
+                                    <Button Content="remove"
+                                            Command="{Binding ElementName=Page, Path=DataContext.RemoveLunchToAddGuestCommand}"
+                                            CommandParameter="{Binding}" />
+
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+
+                <Grid Grid.Row="1"
+                      Margin="0,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Content="save"
+                            Click="{x:Bind ViewModel.SaveLunchToAddButton_OnClick}"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,0,5,0" />
+                    <Button Content="cancel"
+                            Click="{x:Bind ViewModel.CancelLunchToAddButton_OnClick}"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Margin="5,0,0,0" />
+                </Grid>
+            </Grid>
+        </Grid>
+
+    </Grid>
+</Page>
+
