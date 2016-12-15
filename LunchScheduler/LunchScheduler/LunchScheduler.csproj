@@ -113,6 +113,9 @@
     <Compile Include="ViewModels\OverviewViewModel.cs" />
     <Compile Include="ViewModels\ProfileViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\GuestDetailPage.xaml.cs">
+      <DependentUpon>GuestDetailPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\GuestsPage.xaml.cs">
       <DependentUpon>GuestsPage.xaml</DependentUpon>
     </Compile>
@@ -161,6 +164,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\GuestDetailPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\GuestsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -190,8 +197,16 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
+    <SDKReference Include="WindowsMobile, Version=10.0.14393.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LunchScheduler.BackgroundTasks\LunchScheduler.BackgroundTasks.csproj">
+      <Project>{37b6e7d3-7912-4101-a6b0-43c1002613ca}</Project>
+      <Name>LunchScheduler.BackgroundTasks</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LunchScheduler.Data\LunchScheduler.Data.csproj">
       <Project>{d1ce11cd-1008-4521-8a5b-78af387ca0a9}</Project>
       <Name>LunchScheduler.Data</Name>

@@ -6,6 +6,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="using:LunchScheduler.ViewModels"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:behaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d">
     
     <Page.DataContext>
@@ -13,10 +16,19 @@
     </Page.DataContext>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <StackPanel HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-            <StackPanel x:Name="LoggedInPanel" 
-                        Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="HeaderGrid"
+              Background="{ThemeResource ContentDialogBorderThemeBrush}">
+            <!--<Rectangle Fill="{ThemeResource ContentDialogBorderThemeBrush}"/>
+            <controls:DropShadowPanel BlurRadius="4.0"
+                                      ShadowOpacity="0.70"
+                                      OffsetX="5.0"
+                                      OffsetY="5.0"
+                                      Color="Black">
                 <Ellipse Width="200"
                          Height="200"
                          Margin="10"
@@ -25,6 +37,24 @@
                         <ImageBrush ImageSource="{Binding ProfilePictureUrl}" />
                     </Ellipse.Fill>
                 </Ellipse>
+            </controls:DropShadowPanel>-->
+            <Ellipse Width="200"
+                     Height="200"
+                     Margin="10"
+                     Visibility="{Binding ProfilePictureUrl, Converter={StaticResource NullToVisibilityConverter}}">
+                <Ellipse.Fill>
+                    <ImageBrush ImageSource="{Binding ProfilePictureUrl}" />
+                </Ellipse.Fill>
+            </Ellipse>
+        </Grid>
+        
+        <StackPanel x:Name="ButtonsPanel"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Grid.Row="1">
+            
+            <StackPanel x:Name="LoggedInPanel"
+                        Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
                 <TextBlock Text="Logged into:"
                            HorizontalAlignment="Center" />
                 <TextBlock Text="{Binding ConnectedServiceName}"

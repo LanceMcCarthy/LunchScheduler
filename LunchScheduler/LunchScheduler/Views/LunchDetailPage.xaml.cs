@@ -17,10 +17,12 @@ namespace LunchScheduler.Views
         {
             base.OnNavigatedTo(e);
 
-            //var appointment = e?.Parameter as LunchAppointment;
+            var appointment = e?.Parameter as LunchAppointment;
 
-            //if(appointment != null)
-            //    DataContext = new LunchDetailViewModel(appointment);
+            if (appointment != null && DataContext is LunchDetailViewModel)
+            {
+                ((LunchDetailViewModel) DataContext).SelectedAppointment = appointment;
+            }
         }
     }
 }

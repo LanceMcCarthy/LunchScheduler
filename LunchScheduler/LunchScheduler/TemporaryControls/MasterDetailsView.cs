@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using Windows.ApplicationModel;
-using Windows.UI.Composition;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Hosting;
 using Microsoft.Toolkit.Uwp.UI;
 
 // The Templated Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234235
@@ -37,9 +35,6 @@ namespace LunchScheduler.TemporaryControls
         private VisualStateGroup _stateGroup;
         private VisualState _narrowState;
         private Frame _frame;
-        //private Visual _root; // TODO Shawn  - remove
-        //private Compositor _compositor; // TODO Shawn  - remove
-        //private Visual _detailsVisual; // TODO Shawn  - remove
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MasterDetailsView"/> class.
@@ -62,15 +57,7 @@ namespace LunchScheduler.TemporaryControls
             base.OnApplyTemplate();
 
             _detailsPresenter = (ContentPresenter)GetTemplateChild(PartDetailsPresenter);
-            
-            //if (!DesignMode.DesignModeEnabled)
-            //{
-            //    var detailsPanel = (FrameworkElement)GetTemplateChild(PartDetailsPanel); // TODO Shawn  - remove
-            //    _root = ElementCompositionPreview.GetElementVisual(detailsPanel); // TODO Shawn  - remove
-            //    _compositor = _root.Compositor; // TODO Shawn  - remove
-            //    _detailsVisual = ElementCompositionPreview.GetElementVisual(_detailsPresenter); // TODO Shawn  - remove
-            //}
-            
+
             SetMasterHeaderVisibility();
         }
 
@@ -85,7 +72,6 @@ namespace LunchScheduler.TemporaryControls
         private static void OnSelectedItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var view = (MasterDetailsView)d;
-            
             string noSelectionState = view._stateGroup.CurrentState == view._narrowState
                 ? NoSelectionNarrowState
                 : NoSelectionWideState;
@@ -106,7 +92,7 @@ namespace LunchScheduler.TemporaryControls
         }
 
         /// <summary>
-        /// Fired when the <see cref="MasterDetailsView.MasterHeader"/> is changed.
+        /// Fired when the <see cref="MasterHeader"/> is changed.
         /// </summary>
         /// <param name="d">The sender</param>
         /// <param name="e">The event args</param>
@@ -121,10 +107,9 @@ namespace LunchScheduler.TemporaryControls
         // CurrentStateChanged event does not fire properly
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            // TODO Shawn  - wrap
             if (!DesignMode.DesignModeEnabled)
             {
-                SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
+            SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
             }
 
             if (_stateGroup != null)
@@ -140,7 +125,6 @@ namespace LunchScheduler.TemporaryControls
             string noSelectionState = _stateGroup.CurrentState == _narrowState
                 ? NoSelectionNarrowState
                 : NoSelectionWideState;
-
             VisualStateManager.GoToState(this, this.SelectedItem == null ? noSelectionState : HasSelectionState, true);
 
             UpdateViewState();
@@ -148,11 +132,10 @@ namespace LunchScheduler.TemporaryControls
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            // TODO Shawn  - wrap
             if (!DesignMode.DesignModeEnabled)
             {
-                SystemNavigationManager.GetForCurrentView().BackRequested -= OnBackRequested;
-            } 
+            SystemNavigationManager.GetForCurrentView().BackRequested -= OnBackRequested;
+            }
         }
 
         /// <summary>
@@ -209,10 +192,9 @@ namespace LunchScheduler.TemporaryControls
 
             if (ViewState == MasterDetailsViewState.Details)
             {
-                // TODO Shawn  - wrap
                 if (!DesignMode.DesignModeEnabled)
                 {
-                    SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
+                SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
                     AppViewBackButtonVisibility.Visible;
                 }
             }
@@ -221,10 +203,9 @@ namespace LunchScheduler.TemporaryControls
                 // Make sure we show the back button if the stack can navigate back
                 var frame = GetFrame();
 
-                // TODO Shawn  - wrap
                 if (!DesignMode.DesignModeEnabled)
                 {
-                    SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
+                SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
                     ((frame != null) && frame.CanGoBack)
                         ? AppViewBackButtonVisibility.Visible
                         : AppViewBackButtonVisibility.Collapsed;

@@ -28,14 +28,19 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using Windows.ApplicationModel.Calls;
 using Windows.ApplicationModel.Contacts;
+using Windows.ApplicationModel.Email;
+using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using LunchScheduler.Commands;
 using LunchScheduler.Data.Common;
 using LunchScheduler.Data.Models;
@@ -49,7 +54,6 @@ namespace LunchScheduler.ViewModels
     {
         private ObservableCollection<LunchGuest> currentGuests;
         private LunchGuest selectedGuest;
-        //private DelegateCommand addContactCommand;
 
         public GuestsViewModel()
         {
@@ -79,11 +83,8 @@ namespace LunchScheduler.ViewModels
             }
             set { SetProperty(ref selectedGuest, value); }
         }
-
-        //public DelegateCommand AddContactCommand => addContactCommand ?? (addContactCommand = new DelegateCommand(async () => await AddContactAsync()));
         
         #endregion
-
 
 
         #region Methods
@@ -92,8 +93,6 @@ namespace LunchScheduler.ViewModels
         {
             try
             {
-                //CurrentGuests = await LoadCurrentGuests();
-                
                 var lunchAppointments = await LoadLunchAppointments();
 
                 var guests = lunchAppointments.Where(a => a.Guests.Count > 0).SelectMany(a => a.Guests);
@@ -117,7 +116,7 @@ namespace LunchScheduler.ViewModels
         {
             try
             {
-                await UpdateBusyStatus("loading lunch appointments...");
+                await UpdateBusyStatusAsync("loading lunch appointments...");
 
                 // UWP Community Toolkit
                 var json = await StorageFileHelper.ReadTextFromLocalFileAsync(Constants.LunchAppointmentsFileName);
@@ -140,222 +139,61 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                await UpdateBusyStatus("", false);
+                await UpdateBusyStatusAsync("", false);
             }
         }
 
-        public void CallSelectedContact_OnClick(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region x:Bind-able event handlers
+
+        public void MasterDetailsView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //throw new System.NotImplementedException();
+            if (e.AddedItems == null)
+                return;
+
+            if (e.AddedItems.Count > 0)
+            {
+                SelectedGuest = e.AddedItems.FirstOrDefault() as LunchGuest;
+            }
+            else
+            {
+                SelectedGuest = null;
+            }
+        }
+        public async void CallSelectedContact_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (SelectedGuest == null || SelectedGuest.PhoneNumbers.Count == 0)
+                return;
+
+            if (ApiInformation.IsApiContractPresent("Windows.ApplicationModel.Calls.CallsPhoneContract", 1, 0))
+            {
+                PhoneCallManager.ShowPhoneCallUI(SelectedGuest.PhoneNumbers[0].Number, SelectedGuest.FullName);
+            }
+            else
+            {
+                await new MessageDialog("Unfortunately, your device cannot make phone calls.", "No Phone Line").ShowAsync();
+            }
         }
 
-        public void EmailSelectedContact_OnClick(object sender, RoutedEventArgs e)
+        public async void EmailSelectedContact_OnClick(object sender, RoutedEventArgs e)
         {
-            //throw new System.NotImplementedException();
+            if (SelectedGuest == null || SelectedGuest.EmailAddresses.Count == 0)
+                return;
+
+            var emailMessage = new EmailMessage();
+
+            var email = SelectedGuest.EmailAddresses.FirstOrDefault();
+
+            if (email != null)
+            {
+                var emailRecipient = new EmailRecipient(email.Address);
+                emailMessage.To.Add(emailRecipient);
+            }
+
+            await EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
-
-        //public async Task SaveCurrentGuests()
-        //{
-        //    try
-        //    {
-        //        await UpdateBusyStatus("saving currentGuests...");
-
-        //        var json = JsonConvert.SerializeObject(CurrentGuests);
-
-        //        // UWP Community Toolkit
-        //        await StorageFileHelper.WriteTextToLocalFileAsync(json, Constants.RecentLunchGuestsFileName);
-
-        //        Debug.WriteLine($"--SaveCurrentGuests--\r\n{json}");
-        //    }
-        //    catch (Exception)
-        //    {
-        //        Debugger.Break();
-        //    }
-        //}
-
-        //public async Task<ObservableCollection<LunchGuest>> LoadCurrentGuests()
-        //{
-        //    try
-        //    {
-        //        await UpdateBusyStatus("loading currentGuests...");
-
-        //        // UWP Community Toolkit
-        //        var json = await StorageFileHelper.ReadTextFromLocalFileAsync(Constants.RecentLunchGuestsFileName);
-
-        //        Debug.WriteLine($"--LoadCurrentGuests--\r\n{json}");
-
-        //        var storedContacts = JsonConvert.DeserializeObject<ObservableCollection<LunchGuest>>(json);
-
-        //        return storedContacts;
-        //    }
-        //    catch (FileNotFoundException fnfException)
-        //    {
-        //        Debug.WriteLine($"LoadCurrentGuests FileNotFoundException: {fnfException}");
-        //        return new ObservableCollection<LunchGuest>();
-        //        //await StorageFileHelper.WriteTextToLocalFileAsync("", Constants.RecentLunchGuestsFileName);
-        //        //await LoadCurrentGuests();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine($"LoadCurrentGuests Exception: {ex}");
-        //        return new ObservableCollection<LunchGuest>();
-        //    }
-        //    finally
-        //    {
-        //        await UpdateBusyStatus("", false);
-        //    }
-        //}
-
-        //private async Task AddContactAsync()
-        //{
-        //    try
-        //    {
-        //        await UpdateBusyStatus("adding contact...");
-
-        //        // User selects a contact from their device
-        //        var userSelectedContact = await new ContactPicker().PickContactAsync();
-
-        //        // We need to get the full contact info so we have access to the thumbnail
-        //        var contactStore = await ContactManager.RequestStoreAsync(ContactStoreAccessType.AllContactsReadOnly);
-        //        var fullContact = await contactStore.GetContactAsync(userSelectedContact.Id);
-
-        //        if (fullContact == null)
-        //            return;
-
-        //        var isUpdatingExistingContact = false;
-
-        //        var lunchContact = CurrentGuests.FirstOrDefault(c => c.Id == fullContact.Id);
-
-        //        // If we have already got the lunch contact in the app, as user if they intend to update the details
-        //        if (lunchContact != null)
-        //        {
-        //            // Note: This approach awaits the task result
-        //            isUpdatingExistingContact = await CoreWindow.GetForCurrentThread().Dispatcher.RunTaskAsync(async () =>
-        //            {
-        //                var popup = new MessageDialog($"You already have {fullContact.FullName} in your Lunch currentGuests list. Do you want to update your existing lunch contact?", "Update Info?");
-        //                popup.Commands.Add(new UICommand("yes"));
-        //                popup.Commands.Add(new UICommand("no"));
-        //                popup.CancelCommandIndex = 1;
-        //                var command = await popup.ShowAsync();
-
-        //                return command.Label == "yes";
-        //            });
-
-        //            // If the user doesn't want to update the contact info, return.
-        //            if (!isUpdatingExistingContact)
-        //                return;
-
-        //            Debug.WriteLine("Contact exists, updating info");
-        //        }
-
-        //        // We want to copy out the relevant information into our model
-        //        lunchContact = new LunchGuest
-        //        {
-        //            Id = fullContact.Id,
-        //            FullName = fullContact.FullName
-        //        };
-
-        //        // Add each phone number
-        //        foreach (var contactPhone in fullContact.Phones)
-        //        {
-        //            lunchContact.PhoneNumbers.Add(new LunchGuestPhoneNumber
-        //            {
-        //                Description = contactPhone.Kind.ToString("G"),
-        //                Number = contactPhone.Number
-        //            });
-        //        }
-
-        //        // Add each email address
-        //        foreach (var contactEmail in fullContact.Emails)
-        //        {
-        //            lunchContact.EmailAddresses.Add(new LunchGuestEmailAddress
-        //            {
-        //                Description = contactEmail.Kind.ToString("G"),
-        //                Address = contactEmail.Address
-        //            });
-        //        }
-
-        //        lunchContact.ThumbnailUri = await SaveThumbnailAsync(fullContact);
-
-        //        // Now we add an annotation to the contact on the dcevice, 
-        //        // this will allow you to open this app with a protocol directly from the People app
-        //        var annotationStore = await ContactManager.RequestAnnotationStoreAsync(ContactAnnotationStoreAccessType.AppAnnotationsReadWrite);
-
-        //        var annotationLists = await annotationStore.FindAnnotationListsAsync();
-
-        //        // See if we already have an annotation list, if not create one
-        //        ContactAnnotationList annotationList;
-
-        //        if (annotationLists.Count == 0)
-        //        {
-        //            annotationList = await annotationStore.CreateAnnotationListAsync();
-        //        }
-        //        else
-        //        {
-        //            annotationList = annotationLists[0];
-        //        }
-
-        //        // Save this annotation information into the annotation list so that when
-        //        // the People app is opened and that contact is chosen, you'll see this app
-        //        // as an option
-        //        await annotationList.TrySaveAnnotationAsync(new ContactAnnotation
-        //        {
-        //            ContactId = fullContact.Id,
-        //            SupportedOperations = ContactAnnotationOperations.Message |
-        //                                  ContactAnnotationOperations.AudioCall |
-        //                                  ContactAnnotationOperations.VideoCall |
-        //                                  ContactAnnotationOperations.ContactProfile
-        //        });
-
-        //        if (!isUpdatingExistingContact)
-        //        {
-        //            // Finally add the contact to the app's lunch currentGuests list if they're not already present
-        //            CurrentGuests.Add(lunchContact);
-        //        }
-
-        //        // Save updated currentGuests list to storage
-        //        await SaveCurrentGuests();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        Debugger.Break();
-        //    }
-        //    finally
-        //    {
-        //        await UpdateBusyStatus("", false);
-        //    }
-        //}
-
-        //private static async Task<string> SaveThumbnailAsync(Contact contact)
-        //{
-        //    try
-        //    {
-        //        if (contact.Thumbnail == null)
-        //            return "";
-
-        //        using (var stream = await contact.Thumbnail.OpenReadAsync())
-        //        {
-        //            byte[] buffer = new byte[stream.Size];
-        //            var readBuffer = await stream.ReadAsync(buffer.AsBuffer(), (uint)buffer.Length, InputStreamOptions.None);
-
-        //            var file = await ApplicationData.Current.LocalFolder.CreateFileAsync($"{contact.FullName}_Thumb.jpg", CreationCollisionOption.ReplaceExisting);
-        //            using (var fileStream = await file.OpenStreamForWriteAsync())
-        //            {
-        //                await fileStream.WriteAsync(readBuffer.ToArray(), 0, (int)readBuffer.Length);
-        //            }
-
-        //            Debug.WriteLine($"Thumbnail saved - Path: {file.Path}");
-
-        //            // Return the saved image's file path
-        //            return file.Path;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debugger.Break();
-        //        return "";
-        //    }
-        //}
+        
 
         #endregion
     }

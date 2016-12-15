@@ -48,21 +48,17 @@ namespace LunchScheduler.ViewModels
     public class OverviewViewModel : ViewModelBase
     {
         private ObservableCollection<LunchAppointment> lunchAppointments;
-        private ObservableCollection<LunchGuest> currentLunchGuests;
-        private ObservableCollection<LunchGuest> selectedCurrentGuests;
 
         private Visibility addAppointmentOverlayVisibility = Visibility.Collapsed;
         private LunchAppointment lunchToAdd;
         private LunchAppointment selectedLunch;
-        private LunchGuest selectedGuest;
         private DelegateCommand<LunchGuest> removeLunchToAddGuestCommand;
-        
+
         public OverviewViewModel()
         {
             if (DesignMode.DesignModeEnabled)
             {
                 LunchAppointments = DesignTimeHelpers.GenerateSampleAppointments();
-                CurrentLunchGuests = DesignTimeHelpers.GenerateSampleGuests();
                 SelectedLunch = LunchAppointments[0];
                 return;
             }
@@ -76,18 +72,6 @@ namespace LunchScheduler.ViewModels
             set { SetProperty(ref lunchAppointments, value); }
         }
 
-        public ObservableCollection<LunchGuest> CurrentLunchGuests
-        {
-            get { return currentLunchGuests ?? (currentLunchGuests = new ObservableCollection<LunchGuest>()); }
-            set { SetProperty(ref currentLunchGuests, value); }
-        }
-
-        public ObservableCollection<LunchGuest> SelectedCurrentGuests
-        {
-            get { return selectedCurrentGuests ?? (selectedCurrentGuests = new ObservableCollection<LunchGuest>()); }
-            set { SetProperty(ref selectedCurrentGuests, value); }
-        }
-
         public LunchAppointment LunchToAdd
         {
             get { return lunchToAdd ?? (lunchToAdd = new LunchAppointment()); }
@@ -96,14 +80,8 @@ namespace LunchScheduler.ViewModels
 
         public LunchAppointment SelectedLunch
         {
-            get { return selectedLunch; }
+            get { return selectedLunch??(selectedLunch = new LunchAppointment()); }
             set { SetProperty(ref selectedLunch, value); }
-        }
-
-        public LunchGuest SelectedGuest
-        {
-            get { return selectedGuest; }
-            set { SetProperty(ref selectedGuest, value); }
         }
 
         public Visibility AddAppointmentOverlayVisibility
@@ -115,14 +93,14 @@ namespace LunchScheduler.ViewModels
         #endregion
 
         #region Commands
-        
-        //NOte - we have to use a command here because x:Bind doesnt work for the item in the item template
+
+        //Note - we have to use a command here because x:Bind doesnt work for the item in an item template
         public DelegateCommand<LunchGuest> RemoveLunchToAddGuestCommand
             => removeLunchToAddGuestCommand ??
-            (removeLunchToAddGuestCommand = new DelegateCommand<LunchGuest>(async (guest) =>
-            {
-                await RemoveLunchGuest(guest);
-            }));
+               (removeLunchToAddGuestCommand = new DelegateCommand<LunchGuest>(async (guest) =>
+               {
+                   await RemoveLunchGuest(guest);
+               }));
 
         #endregion
 
@@ -133,7 +111,9 @@ namespace LunchScheduler.ViewModels
             try
             {
                 LunchAppointments = await LoadLunchAppointments();
-                UpdateCurrentGuestsList();
+
+                SelectedLunch = LunchAppointments.FirstOrDefault();
+
 
                 return true;
             }
@@ -144,22 +124,15 @@ namespace LunchScheduler.ViewModels
             }
         }
 
-        private void UpdateCurrentGuestsList()
-        {
-            var guests = LunchAppointments.Where(a => a.Guests.Count > 0).SelectMany(a => a.Guests);
-
-            foreach (var lunchGuest in guests)
-            {
-                if (CurrentLunchGuests.All(g => g.Id != lunchGuest.Id))
-                    CurrentLunchGuests.Add(lunchGuest);
-            }
-        }
-
+        /// <summary>
+        /// Adds a new lunch
+        /// </summary>
+        /// <returns></returns>
         private async Task AddLunchAppointmentAsync()
         {
             try
             {
-                await UpdateBusyStatus("adding lunch appointment...");
+                await UpdateBusyStatusAsync("adding lunch appointment...");
 
                 if (LunchToAdd == null)
                     return;
@@ -172,9 +145,6 @@ namespace LunchScheduler.ViewModels
                 // Save updated appointments list to storage
                 await SaveLunchAppointments();
 
-                // Refresh the curent guests list
-                UpdateCurrentGuestsList();
-
                 // Reset to clear any partially filled out info
                 LunchToAdd = new LunchAppointment();
             }
@@ -184,15 +154,21 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                await UpdateBusyStatus("", false);
+                await UpdateBusyStatusAsync("", false);
             }
         }
 
+        /// <summary>
+        /// Opens device's contacts flyout so the user can pick a guest from their list of contacts
+        /// The contacts's thumbnail stream is also saved to a file for easy databinding
+        /// </summary>
+        /// <param name="appointment">Lunch appointment to add a guest to</param>
+        /// <returns></returns>
         private async Task AddLunchGuestAsync(LunchAppointment appointment)
         {
             try
             {
-                await UpdateBusyStatus("adding guest to appointment...");
+                await UpdateBusyStatusAsync("adding guest to appointment...");
 
                 // User selects a contact from their device
                 var userSelectedContact = await new ContactPicker().PickContactAsync();
@@ -217,20 +193,6 @@ namespace LunchScheduler.ViewModels
                         await
                             new MessageDialog($"You already have {fullContact.FullName} listed as a guest").ShowAsync();
 
-                        return;
-                    }
-                }
-
-                if (CurrentLunchGuests.Any())
-                {
-                    // Check to see if they're already in the recent guests list
-                    lunchGuest = CurrentLunchGuests.FirstOrDefault(c => c.Id == fullContact.Id);
-
-                    // if the contact is in the recent guests list, use that instance so we dont have to re-save the data
-                    if (lunchGuest != null)
-                    {
-                        Debug.WriteLine("Contact exists in Recent guest list, using that instance");
-                        appointment.Guests.Add(lunchGuest);
                         return;
                     }
                 }
@@ -301,19 +263,6 @@ namespace LunchScheduler.ViewModels
 
 
                 appointment.Guests.Add(lunchGuest);
-
-                // ************ Since the guest has not been previously added, we need add and save ************ 
-
-                // This is how we keep the list trimmed to just recent guests. If more than 20 exist
-                // remove the oldest one
-                //if (CurrentLunchGuests.Count > 20)
-                //    CurrentLunchGuests.Remove(CurrentLunchGuests.LastOrDefault());
-
-                //// Add the guest to the top of the list
-                //CurrentLunchGuests.Insert(0, lunchGuest);
-
-                //// Save the updated list to storage
-                //await SaveRecentGuestsAsync();
             }
             catch (Exception ex)
             {
@@ -321,10 +270,15 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                await UpdateBusyStatus("", false);
+                await UpdateBusyStatusAsync("", false);
             }
         }
 
+        /// <summary>
+        /// Removes a guest and deletes the thumbnail photo
+        /// </summary>
+        /// <param name="guest"></param>
+        /// <returns></returns>
         private async Task RemoveLunchGuest(LunchGuest guest)
         {
             if (guest == null)
@@ -347,22 +301,28 @@ namespace LunchScheduler.ViewModels
 
         #region x:Bind-able event handlers
 
+        public void MasterDetailsView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems == null)
+                return;
+
+            if (e.AddedItems.Count > 0)
+            {
+                SelectedLunch = e.AddedItems.FirstOrDefault() as LunchAppointment;
+            }
+            else
+            {
+                SelectedLunch = null;
+            }
+        }
+
         public void AddAppointmentAppBarButton_OnClick(object sender, RoutedEventArgs e)
         {
             LunchToAdd = new LunchAppointment();
 
-            // If the user pre-selected any recent guests, automatically add them
-            if (SelectedCurrentGuests.Count > 0)
-            {
-                foreach (var selectedRecentGuest in SelectedCurrentGuests)
-                {
-                    LunchToAdd.Guests.Add(selectedRecentGuest);
-                }
-            }
-
             AddAppointmentOverlayVisibility = Visibility.Visible;
         }
-        
+
         public async void SaveLunchToAddButton_OnClick(object sender, RoutedEventArgs e)
         {
             await AddLunchAppointmentAsync();
@@ -386,7 +346,7 @@ namespace LunchScheduler.ViewModels
         {
             var guest = ((Button) sender)?.DataContext as LunchGuest;
 
-            if(guest != null)
+            if (guest != null)
                 await RemoveLunchGuest(guest);
         }
 
@@ -408,40 +368,19 @@ namespace LunchScheduler.ViewModels
                 LunchToAdd.LunchTime.Day, e.NewTime.Hours, e.NewTime.Minutes, 0, LunchToAdd.LunchTime.Offset);
         }
 
-        public void RecentGuestsListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count > 0)
-            {
-                foreach (var item in e.AddedItems)
-                {
-                    var guest = item as LunchGuest;
-
-                    if (!SelectedCurrentGuests.Contains(guest))
-                        SelectedCurrentGuests.Add(guest);
-                }
-            }
-
-            if (e.RemovedItems.Count > 0)
-            {
-                foreach (var item in e.RemovedItems)
-                {
-                    var guest = item as LunchGuest;
-
-                    if (!SelectedCurrentGuests.Contains(guest))
-                        SelectedCurrentGuests.Remove(guest);
-                }
-            }
-        }
-
         #endregion
 
         #region Data and file operations
 
+        /// <summary>
+        /// Saves lunch appointments to storage
+        /// </summary>
+        /// <returns></returns>
         public async Task SaveLunchAppointments()
         {
             try
             {
-                await UpdateBusyStatus("saving LunchAppointments...");
+                await UpdateBusyStatusAsync("saving LunchAppointments...");
 
                 var json = JsonConvert.SerializeObject(LunchAppointments);
 
@@ -456,11 +395,15 @@ namespace LunchScheduler.ViewModels
             }
         }
 
+        /// <summary>
+        /// Loads saved lunch appointments from file
+        /// </summary>
+        /// <returns>ObservableCollection of LunchAppointments</returns>
         public async Task<ObservableCollection<LunchAppointment>> LoadLunchAppointments()
         {
             try
             {
-                await UpdateBusyStatus("loading lunch appointments...");
+                await UpdateBusyStatusAsync("loading lunch appointments...");
 
                 // UWP Community Toolkit
                 var json = await StorageFileHelper.ReadTextFromLocalFileAsync(Constants.LunchAppointmentsFileName);
@@ -483,7 +426,41 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                await UpdateBusyStatus("", false);
+                await UpdateBusyStatusAsync("", false);
+            }
+        }
+
+        /// <summary>
+        /// Deletes a lunch appointment
+        /// </summary>
+        /// <param name="appointment"></param>
+        /// <returns></returns>
+        public async Task DeleteLunchAppointmentAsync(LunchAppointment appointment)
+        {
+            try
+            {
+                await UpdateBusyStatusAsync("deleting appointment...");
+
+                // First let's clean up any guest photo files
+                foreach (var guest in appointment.Guests)
+                {
+                    await DeleteThumbnailAsync(guest.ThumbnailUri);
+                }
+
+                // Now we can remove the appointment
+                LunchAppointments.Remove(appointment);
+
+                // Savew the updated list
+                await SaveLunchAppointments();
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"DeleteLunchAppointmentAsync Exception: {ex}");
+            }
+            finally
+            {
+                await UpdateBusyStatusAsync("", false);
             }
         }
         
@@ -491,7 +468,7 @@ namespace LunchScheduler.ViewModels
         /// Save the Contact's thumbnail as a jpg in the app's storage
         /// </summary>
         /// <param name="contact">The Contact to save the thumbnail for</param>
-        /// <returns>Complete file path of jpg image</returns>
+        /// <returns>File path to the jpg image</returns>
         private static async Task<string> SaveThumbnailAsync(Contact contact)
         {
             try
@@ -526,6 +503,11 @@ namespace LunchScheduler.ViewModels
             }
         }
 
+        /// <summary>
+        /// Checks to see if there is a thumbnail photo and deletes it
+        /// </summary>
+        /// <param name="filePath">File path to lunch guest's photo</param>
+        /// <returns></returns>
         private static async Task DeleteThumbnailAsync(string filePath)
         {
             try
@@ -535,10 +517,9 @@ namespace LunchScheduler.ViewModels
                 if (file != null)
                     await file.DeleteAsync(StorageDeleteOption.PermanentDelete);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                    
-                throw;
+                Debug.WriteLine($"DeleteThumbnailAsync Exception: {ex}");
             }
         }
 

@@ -35,7 +35,7 @@ namespace LunchScheduler
             InitializeComponent();
             Suspending += OnSuspending;
         }
-        
+
         protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
             // Opt out of Prelaunch
@@ -100,11 +100,10 @@ namespace LunchScheduler
                 {
                     var toastArgs = e as ToastNotificationActivatedEventArgs;
                     var argument = toastArgs?.Argument;
-
-                    Debug.WriteLine($"OnActivated ToastNotification argument: {argument}");
-
-                    if (argument != null && argument.Contains("Id"))
+                    
+                    if (argument != null && argument.Contains("id"))
                     {
+                        Debug.WriteLine($"OnActivated ToastNotification argument: {argument}");
                         shell.ContentFrame.Navigate(typeof(LunchDetailPage), argument);
                     }
                 }
@@ -203,19 +202,17 @@ namespace LunchScheduler
             {
                 var json = Serialize(ProfileViewModel);
 
+                // Check to see if file is there
                 var file = ApplicationData.Current.TemporaryFolder.TryGetItemAsync(Constants.ProfileViewModelFileName);
-
                 if (file == null)
-                {
                     await ApplicationData.Current.TemporaryFolder.CreateFileAsync(Constants.ProfileViewModelFileName, CreationCollisionOption.ReplaceExisting);
-                }
 
-                // UWP Community Toolkit
+                // Then save with UWP Community Toolkit helper
                 await StorageFileHelper.WriteTextToLocalFileAsync(json, Constants.ProfileViewModelFileName);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"CacheViewModelException: {ex}");
+                Debug.WriteLine($"CachedViewModelException: {ex}");
             }
         }
 

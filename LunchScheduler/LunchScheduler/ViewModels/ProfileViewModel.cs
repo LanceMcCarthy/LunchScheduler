@@ -42,7 +42,7 @@ namespace LunchScheduler.ViewModels
                 // If the  value if empty, let's check to see if there is one in settings
                 object storedConnectedServiceName;
 
-                if (localSettings.Values.TryGetValue("", out storedConnectedServiceName))
+                if (localSettings.Values.TryGetValue("ConnectedServiceName", out storedConnectedServiceName))
                 {
                     connectedServiceName = storedConnectedServiceName.ToString();
                 }
@@ -51,7 +51,8 @@ namespace LunchScheduler.ViewModels
             }
             set
             {
-                localSettings.Values["ConnectedServiceName"] = value;
+                if(localSettings != null)
+                    localSettings.Values["ConnectedServiceName"] = value;
                 SetProperty(ref connectedServiceName, value);
             }
         }

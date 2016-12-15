@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:viewModels="using:LunchScheduler.ViewModels"
+      xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
       xmlns:temporaryControls="using:LunchScheduler.TemporaryControls"
       mc:Ignorable="d">
 
@@ -17,15 +18,18 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        
+        <!-- SelectedItem="{Binding SelectedGuest, Mode=TwoWay}"-->
 
-        <temporaryControls:MasterDetailsView ItemsSource="{Binding CurrentGuests}"
-                                    SelectedItem="{Binding SelectedGuest, Mode=TwoWay}">
-            <temporaryControls:MasterDetailsView.ItemTemplate>
+        <controls:MasterDetailsView ItemsSource="{Binding CurrentGuests}"
+                                    SelectionChanged="{x:Bind ViewModel.MasterDetailsView_OnSelectionChanged}"
+                                    NoSelectionContent="Select a guest">
+            <controls:MasterDetailsView.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding FullName}" />
                 </DataTemplate>
-            </temporaryControls:MasterDetailsView.ItemTemplate>
-            <temporaryControls:MasterDetailsView.DetailsTemplate>
+            </controls:MasterDetailsView.ItemTemplate>
+            <controls:MasterDetailsView.DetailsTemplate>
                 <DataTemplate>
                     <Grid>
                         <Grid.RowDefinitions>
@@ -33,6 +37,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <Grid x:Name="HeaderGrid"
@@ -68,6 +73,7 @@
                         <GridView ItemsSource="{Binding PhoneNumbers}"
                                   ItemTemplate="{StaticResource GuestPhoneNumberTemplate}"
                                   ItemContainerStyle="{StaticResource GridViewItemStyle}"
+                                  Visibility="{Binding PhoneNumbers, Converter={StaticResource CollectionVisibilityConverter}}"
                                   Header="Phone Numbers"
                                   Margin="20,0,0,0"
                                   Grid.Row="1"/>
@@ -75,17 +81,20 @@
                         <GridView ItemsSource="{Binding EmailAddresses}"
                                   ItemTemplate="{StaticResource GuestEmailTemplate}"
                                   ItemContainerStyle="{StaticResource GridViewItemStyle}"
+                                  Visibility="{Binding EmailAddresses, Converter={StaticResource CollectionVisibilityConverter}}"
                                   Header="Email Addresses"
                                   Margin="20,0,0,0"
                                   Grid.Row="2"/>
+
                     </Grid>
                 </DataTemplate>
-            </temporaryControls:MasterDetailsView.DetailsTemplate>
-            <temporaryControls:MasterDetailsView.NoSelectionContentTemplate>
+            </controls:MasterDetailsView.DetailsTemplate>
+            <controls:MasterDetailsView.NoSelectionContentTemplate>
                 <DataTemplate>
                     <StackPanel HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
                         <SymbolIcon RenderTransformOrigin=".5,.5"
+                                    Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
                                     Symbol="Contact">
                             <SymbolIcon.RenderTransform>
                                 <CompositeTransform ScaleX="2"
@@ -94,17 +103,20 @@
                         </SymbolIcon>
                         <TextBlock Margin="0,12"
                                    FontSize="24"
+                                   Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
                                    Text="{Binding}" />
                     </StackPanel>
                 </DataTemplate>
-            </temporaryControls:MasterDetailsView.NoSelectionContentTemplate>
-        </temporaryControls:MasterDetailsView>
+            </controls:MasterDetailsView.NoSelectionContentTemplate>
+        </controls:MasterDetailsView>
 
         <CommandBar x:Name="RootCommandBar"
                     Grid.Row="1">
             <AppBarButton Icon="Phone"
+                          Visibility="{Binding SelectedGuest.PhoneNumbers, Converter={StaticResource CollectionVisibilityConverter}}"
                           Click="{x:Bind ViewModel.CallSelectedContact_OnClick}"/>
-            <AppBarButton Icon="Message"
+            <AppBarButton Icon="Mail"
+                          Visibility="{Binding SelectedGuest.EmailAddresses, Converter={StaticResource CollectionVisibilityConverter}}"
                           Click="{x:Bind ViewModel.EmailSelectedContact_OnClick}" />
         </CommandBar>
 

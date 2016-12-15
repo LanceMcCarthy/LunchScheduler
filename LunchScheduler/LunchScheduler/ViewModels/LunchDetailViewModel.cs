@@ -17,11 +17,6 @@ namespace LunchScheduler.ViewModels
             }
         }
 
-        public LunchDetailViewModel(LunchAppointment appointment)
-        {
-            SelectedAppointment = appointment;
-        }
-
         public LunchAppointment SelectedAppointment
         {
             get { return selectedAppointment ?? (selectedAppointment = new LunchAppointment()); }

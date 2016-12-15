@@ -22,32 +22,12 @@
 //  THE SOFTWARE.
 //  ---------------------------------------------------------------------------------
 
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
 namespace LunchScheduler.Data.Models
 {
     /// <summary>
-    ///  A reusable implementation of <see cref="INotifyPropertyChanged"/>
+    /// Interface that all model objects should implement.
     /// </summary>
-    public abstract class BindableBase : INotifyPropertyChanged
+    public interface IModel
     {
-        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (object.Equals(storage, value) || propertyName == null)
-                return false;
-
-            storage = value;
-
-            OnPropertyChanged(propertyName);
-            return true;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }

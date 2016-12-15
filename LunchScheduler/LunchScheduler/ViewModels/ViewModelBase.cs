@@ -24,13 +24,12 @@
 
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
-using LunchScheduler.Data.Common;
 using LunchScheduler.Data.Models;
 using LunchScheduler.Helpers;
 
 namespace LunchScheduler.ViewModels
 {
-    public abstract class ViewModelBase : BindableBase
+    public abstract class ViewModelBase : ModelBase
     {
         private NotifyTaskCompletion<bool> isInitialized;
         private bool isBusy;
@@ -40,9 +39,7 @@ namespace LunchScheduler.ViewModels
         {
             if (DesignMode.DesignModeEnabled)
                 return;
-
-            // Normally you wouldn't want to do this, but we're not going to implement 
-            // Init more than one level up so we dont have to worry about multiple calls
+            
             // ReSharper disable once VirtualMemberCallInConstructor
             IsInitialized = new NotifyTaskCompletion<bool>(Init());
         }
@@ -67,7 +64,7 @@ namespace LunchScheduler.ViewModels
 
         public abstract Task<bool> Init();
 
-        public async Task UpdateBusyStatus(string message, bool busy = true)
+        public async Task UpdateBusyStatusAsync(string message, bool busy = true)
         {
             await TaskHelpers.CallOnUiThreadAsync(() =>
             {

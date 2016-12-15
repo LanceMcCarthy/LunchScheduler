@@ -29,7 +29,7 @@ using System.Runtime.Serialization;
 namespace LunchScheduler.Data.Models
 {
     [DataContract]
-    public class LunchAppointment : BindableBase
+    public class LunchAppointment : ModelBase
     {
         private string id;
         private string title;

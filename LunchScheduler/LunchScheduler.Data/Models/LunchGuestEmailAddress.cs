@@ -27,7 +27,7 @@ using System.Runtime.Serialization;
 namespace LunchScheduler.Data.Models
 {
     [DataContract]
-    public class LunchGuestEmailAddress : BindableBase
+    public class LunchGuestEmailAddress : ModelBase
     {
         private string description;
         private string address;

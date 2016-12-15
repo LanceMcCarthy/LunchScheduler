@@ -9,7 +9,7 @@
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d">
 
-    <Page.DataContext>
+ <!--   <Page.DataContext>
         <viewModels:OverviewViewModel x:Name="ViewModel" />
     </Page.DataContext>
 
@@ -200,7 +200,7 @@
             </Grid>
         </Grid>
 
-        <!--<VisualStateManager.VisualStateGroups>
+        --><!--<VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState x:Name="wideState">
                     <VisualState.StateTriggers>
@@ -233,6 +233,6 @@
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>-->
-    </Grid>
+        </VisualStateManager.VisualStateGroups>--><!--
+    </Grid>-->
 </Page>

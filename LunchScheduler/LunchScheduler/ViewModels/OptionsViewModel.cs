@@ -22,24 +22,76 @@
 //  THE SOFTWARE.
 //  ---------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.ApplicationModel.Background;
+using Windows.Storage;
+using LunchScheduler.BackgroundTasks;
+using Microsoft.Toolkit.Uwp;
 
 namespace LunchScheduler.ViewModels
 {
     public class OptionsViewModel : ViewModelBase
     {
+        private readonly ApplicationDataContainer localSettings;
+        private bool isBackgroundTaskEnabled;
+
         public OptionsViewModel()
         {
-            
+            if (DesignMode.DesignModeEnabled)
+                return;
+
+            localSettings = ApplicationData.Current.LocalSettings;
+        }
+
+        public bool IsBackgroundTaskEnabled
+        {
+            get
+            {
+                // check local settings first
+                object obj;
+                if (localSettings != null && localSettings.Values.TryGetValue("IsBackgroundTaskEnabled", out obj))
+                {
+                    if(obj is bool)
+                        isBackgroundTaskEnabled = (bool)obj;
+                }
+                
+                return isBackgroundTaskEnabled;
+            }
+            set
+            {
+                SetProperty(ref isBackgroundTaskEnabled, value);
+
+                // Save the setting to local settings
+                if (localSettings != null)
+                    localSettings.Values["IsBackgroundTaskEnabled"] = value;
+
+                // Enable or diable the task accordingly
+                if (value)
+                    EnableBackgroundTask();
+                else
+                    DisableBeckgroundTask();
+            }
         }
 
         public override async Task<bool> Init()
         {
+            
             return true;
+        }
+
+        private void EnableBackgroundTask()
+        {
+            // Using UWP Community Toolkit - http://docs.uwpcommunitytoolkit.com/en/master/helpers/BackgroundTaskHelper/
+            BackgroundTaskRegistration registered = BackgroundTaskHelper.Register(typeof(MonitorLunchAppointmentsTask), new TimeTrigger(15, false));
+            
+        }
+
+        private void DisableBeckgroundTask()
+        {
+            // Using UWP Community Toolkit - http://docs.uwpcommunitytoolkit.com/en/master/helpers/BackgroundTaskHelper/
+            BackgroundTaskRegistration registered = BackgroundTaskHelper.Register(typeof(MonitorLunchAppointmentsTask), new TimeTrigger(15, false));
+            registered.Unregister(false);
         }
 
     }

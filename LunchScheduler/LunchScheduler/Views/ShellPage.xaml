@@ -38,7 +38,18 @@
                                 OptionsItemTemplate="{StaticResource MenuItemTemplate}"
                                 Loaded="HamburgerMenuControl_OnLoaded"
                                 OptionsItemClick="OnMenuItemClick">
-            <Frame x:Name="contentFrame" />
+            <controls:HamburgerMenu.Content>
+                <Grid x:Name="contentGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    
+                    <Grid x:Name="contentHeaderGrid" Height="50" Background="Black"/>
+
+                    <Frame x:Name="contentFrame" Grid.Row="1"/>
+                </Grid>
+            </controls:HamburgerMenu.Content>
         </controls:HamburgerMenu>
 
         <VisualStateManager.VisualStateGroups>
@@ -50,6 +61,8 @@
                     <VisualState.Setters>
                         <Setter Target="hamburgerMenuControl.DisplayMode"
                                 Value="CompactInline" />
+                        <Setter Target="contentHeaderGrid.Visibility"
+                                Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="narrowState">
@@ -57,6 +70,8 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="contentHeaderGrid.Visibility"
+                                Value="Visible" />
                         <Setter Target="hamburgerMenuControl.IsPaneOpen"
                                 Value="False"/>
                         <Setter Target="hamburgerMenuControl.DisplayMode"
