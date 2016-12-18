@@ -85,8 +85,7 @@ namespace LunchScheduler.ViewModels
         }
         
         #endregion
-
-
+        
         #region Methods
 
         public override async Task<bool> Init()

@@ -20,8 +20,6 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <!-- SelectedItem="{Binding SelectedLunch, Mode=TwoWay}" -->
-
         <controls:MasterDetailsView ItemsSource="{Binding LunchAppointments}"
                                     SelectionChanged="{x:Bind ViewModel.MasterDetailsView_OnSelectionChanged}"
                                     NoSelectionContent="Add or select an appointment"
@@ -48,26 +46,37 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <StackPanel Background="{ThemeResource CalendarDatePickerBackgroundFocused}">
-                            <TextBlock Text="{Binding Title}"
-                                       Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                       Style="{StaticResource HeaderTextBlockStyle}"
-                                       HorizontalAlignment="Center" />
-                            <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}"
-                                       Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                       Style="{StaticResource SubheaderTextBlockStyle}"
-                                       HorizontalAlignment="Center" />
-                            <TextBlock Text="{Binding Location.Name}"
-                                       Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                       Margin="0,10,0,0"
-                                       HorizontalAlignment="Center"
-                                       Style="{StaticResource TitleTextBlockStyle}" />
-                            <TextBlock Text="{Binding Location.Address}"
-                                       Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                       HorizontalAlignment="Center"
-                                       Style="{StaticResource SubtitleTextBlockStyle}" />
-                            <TextBlock Text="{Binding Location.PhoneNumber}" />
+                            <StackPanel Padding="0,0,0,10">
+                                <TextBlock Text="{Binding Title}"
+                                           Style="{StaticResource HeaderTextBlockStyle}"
+                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}"
+                                           Style="{StaticResource SubheaderTextBlockStyle}"
+                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                           HorizontalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Background="{ThemeResource AppBarBackground}"
+                                        Padding="0,0,0,10">
+                                <TextBlock Text="{Binding Location.Name}"
+                                           Margin="0,0,0,0"
+                                           HorizontalAlignment="Center"
+                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                           Style="{StaticResource TitleTextBlockStyle}" />
+                                <TextBlock Text="{Binding Location.Address}"
+                                           HorizontalAlignment="Center"
+                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                                <TextBlock Text="{Binding Location.PhoneNumber}"
+                                           Style="{StaticResource SubtitleTextBlockStyle}"
+                                           HorizontalAlignment="Center"
+                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                           Visibility="{Binding Location.PhoneNumber, Converter={StaticResource NullToVisibilityConverter}}" />
+                            </StackPanel>
                         </StackPanel>
                         <GridView ItemsSource="{Binding Guests}"
+                                  Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
                                   ItemTemplate="{StaticResource LargeGuestItemTemplate}"
                                   ItemContainerStyle="{StaticResource GridViewItemStyle}"
                                   SelectionMode="None"
@@ -102,12 +111,21 @@
         <CommandBar Grid.Row="1"
                     Grid.ColumnSpan="2">
             <AppBarButton Icon="Add"
+                          Label="add lunch"
                           Click="{x:Bind ViewModel.AddAppointmentAppBarButton_OnClick}" />
+            <AppBarButton Icon="Delete"
+                          Label="delete"
+                          Visibility="{Binding SelectedLunch, Converter={StaticResource NullToVisibilityConverter}}"
+                          Click="{x:Bind ViewModel.DeleteLunchButton_OnClick}"/>
+            <AppBarButton Icon="Edit"
+                          Label="edit"
+                          Visibility="{Binding SelectedLunch, Converter={StaticResource NullToVisibilityConverter}}"
+                          Click="{x:Bind ViewModel.EditLunchButton_OnClick}"/>
         </CommandBar>
         
         <!-- -->
 
-        <Grid x:Name="AddLunchOverlay"
+        <Grid x:Name="AddNewLunchAppointmentOverlay"
               Visibility="{Binding AddAppointmentOverlayVisibility}"
               Background="#DDFFFFFF"
               Grid.RowSpan="2">
@@ -165,7 +183,7 @@
 
                     <ListView ItemsSource="{Binding LunchToAdd.Guests}"
                               SelectionMode="None"
-                              Height="135"
+                              Height="150"
                               ScrollViewer.VerticalScrollMode="Disabled"
                               ScrollViewer.HorizontalScrollMode="Enabled"
                               ScrollViewer.HorizontalScrollBarVisibility="Auto">
@@ -188,6 +206,7 @@
                             <DataTemplate>
                                 <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}">
                                     <TextBlock Text="{Binding FullName}"
+                                               Margin="5,5,5,0"
                                                TextTrimming="CharacterEllipsis"
                                                HorizontalAlignment="Center" />
                                     <Grid>

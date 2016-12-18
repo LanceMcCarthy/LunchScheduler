@@ -34,8 +34,13 @@ namespace LunchScheduler.Data.Models
         private string id;
         private string title;
         private LunchLocation location;
-        private DateTimeOffset lunchTime;
+        private DateTimeOffset lunchTime = DateTimeOffset.Now;
         private ObservableCollection<LunchGuest> guests;
+
+        public LunchAppointment()
+        {
+            id = Guid.NewGuid().ToString("N");
+        }
 
         [DataMember]
         public string Id
@@ -54,7 +59,7 @@ namespace LunchScheduler.Data.Models
         [DataMember]
         public LunchLocation Location
         {
-            get { return location; }
+            get { return location ?? (location = new LunchLocation()); }
             set { SetProperty(ref location, value); }
         }
 

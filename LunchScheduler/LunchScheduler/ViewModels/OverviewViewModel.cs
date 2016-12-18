@@ -40,6 +40,7 @@ using LunchScheduler.Commands;
 using LunchScheduler.Data.Common;
 using LunchScheduler.Data.Models;
 using LunchScheduler.Helpers;
+using LunchScheduler.Views;
 using Microsoft.Toolkit.Uwp;
 using Newtonsoft.Json;
 
@@ -59,7 +60,7 @@ namespace LunchScheduler.ViewModels
             if (DesignMode.DesignModeEnabled)
             {
                 LunchAppointments = DesignTimeHelpers.GenerateSampleAppointments();
-                SelectedLunch = LunchAppointments[0];
+                //SelectedLunch = LunchAppointments[0];
                 return;
             }
         }
@@ -106,15 +107,17 @@ namespace LunchScheduler.ViewModels
 
         #region Methods
 
+        /// <summary>
+        /// Required for every view model
+        /// </summary>
+        /// <returns></returns>
         public override async Task<bool> Init()
         {
             try
             {
                 LunchAppointments = await LoadLunchAppointments();
-
                 SelectedLunch = LunchAppointments.FirstOrDefault();
-
-
+                
                 return true;
             }
             catch (Exception ex)
@@ -147,6 +150,9 @@ namespace LunchScheduler.ViewModels
 
                 // Reset to clear any partially filled out info
                 LunchToAdd = new LunchAppointment();
+
+                // Select the last item we added to the list
+                SelectedLunch = LunchAppointments.LastOrDefault();
             }
             catch (Exception ex)
             {
@@ -190,15 +196,13 @@ namespace LunchScheduler.ViewModels
                     if (lunchGuest != null)
                     {
                         Debug.WriteLine("Contact exists in appointment");
-                        await
-                            new MessageDialog($"You already have {fullContact.FullName} listed as a guest").ShowAsync();
+                        await new MessageDialog($"You already have {fullContact.FullName} listed as a guest").ShowAsync();
 
                         return;
                     }
                 }
 
                 // The contact does not exist in the app, lets add them now
-
                 lunchGuest = new LunchGuest
                 {
                     Id = fullContact.Id,
@@ -227,41 +231,7 @@ namespace LunchScheduler.ViewModels
 
                 // Save the contact's thumnail as a jpg image and get the file path for DataBinding to UIElements
                 lunchGuest.ThumbnailUri = await SaveThumbnailAsync(fullContact);
-
-                // Now we add an annotation to the contact on the device, 
-                // this will allow you to open this app with a protocol directly from the People app
-                var annotationStore =
-                    await
-                        ContactManager.RequestAnnotationStoreAsync(
-                            ContactAnnotationStoreAccessType.AppAnnotationsReadWrite);
-
-                var annotationLists = await annotationStore.FindAnnotationListsAsync();
-
-                // See if we already have an annotation list, if not create one
-                ContactAnnotationList annotationList;
-
-                if (annotationLists.Count == 0)
-                {
-                    annotationList = await annotationStore.CreateAnnotationListAsync();
-                }
-                else
-                {
-                    annotationList = annotationLists[0];
-                }
-
-                // Save this annotation information into the annotation list so that when
-                // the People app is opened and that contact is chosen, you'll see this app
-                // as an option
-                await annotationList.TrySaveAnnotationAsync(new ContactAnnotation
-                {
-                    ContactId = fullContact.Id,
-                    SupportedOperations = ContactAnnotationOperations.Message |
-                                          ContactAnnotationOperations.AudioCall |
-                                          ContactAnnotationOperations.VideoCall |
-                                          ContactAnnotationOperations.ContactProfile
-                });
-
-
+                
                 appointment.Guests.Add(lunchGuest);
             }
             catch (Exception ex)
@@ -277,7 +247,7 @@ namespace LunchScheduler.ViewModels
         /// <summary>
         /// Removes a guest and deletes the thumbnail photo
         /// </summary>
-        /// <param name="guest"></param>
+        /// <param name="guest">Guest to remove</param>
         /// <returns></returns>
         private async Task RemoveLunchGuest(LunchGuest guest)
         {
@@ -288,7 +258,7 @@ namespace LunchScheduler.ViewModels
             {
                 LunchToAdd.Guests.Remove(guest);
 
-                // If the guest is no longer in any appointments, delete the thumbnail image from storage
+                // If the guest is no longer in any other appointments, delete the thumbnail image from storage
                 foreach (var lunchAppointment in LunchAppointments)
                 {
                     if (lunchAppointment.Guests.Contains(guest))
@@ -327,16 +297,16 @@ namespace LunchScheduler.ViewModels
         {
             await AddLunchAppointmentAsync();
         }
-
+        
         public void CancelLunchToAddButton_OnClick(object sender, RoutedEventArgs e)
         {
             // Hide the editor
             AddAppointmentOverlayVisibility = Visibility.Collapsed;
 
             // Reset to clear any partially filled out info
-            LunchToAdd = new LunchAppointment();
+            LunchToAdd = null;
         }
-
+        
         public async void AddLunchGuestButton_OnClick(object sender, RoutedEventArgs e)
         {
             await AddLunchGuestAsync(LunchToAdd);
@@ -366,6 +336,24 @@ namespace LunchScheduler.ViewModels
 
             LunchToAdd.LunchTime = new DateTimeOffset(LunchToAdd.LunchTime.Year, LunchToAdd.LunchTime.Month,
                 LunchToAdd.LunchTime.Day, e.NewTime.Hours, e.NewTime.Minutes, 0, LunchToAdd.LunchTime.Offset);
+        }
+
+        public void EditLunchButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (SelectedLunch == null)
+                return;
+
+            App.ContentFrame.Navigate(typeof(LunchDetailPage), SelectedLunch);
+        }
+
+        public async void DeleteLunchButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (SelectedLunch == null)
+                return;
+
+            await DeleteLunchAppointmentAsync(SelectedLunch);
+
+            SelectedLunch = null;
         }
 
         #endregion

@@ -9,12 +9,62 @@
     mc:Ignorable="d">
     
     <Page.DataContext>
-        <viewModels:OptionsViewModel/>
+        <viewModels:OptionsViewModel x:Name="ViewModel"/>
     </Page.DataContext>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <ToggleSwitch Header="Lunch Reminders"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <Grid x:Name="StatusGrid" Background="{Binding CurrentStatusBrush}" Padding="10">
+            <StackPanel>
+                <TextBlock Text="Reminders Background Task Status"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Foreground="White" />
+                <TextBlock Text="{Binding CurrentStatus}"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="White" />
+            </StackPanel>
+            
+        </Grid>
+        
+        <StackPanel x:Name="OptionsPanel"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Grid.Row="1"
+                    Margin="20">
+            <ToggleSwitch Header="Lunch Reminders" IsOn="{Binding IsBackgroundTaskEnabled, Mode=TwoWay}"/>
+            <ComboBox x:Name="FrequencyComboBox"
+                      Visibility="{Binding IsBackgroundTaskEnabled, Converter={StaticResource BoolToVisibilityConverter}}"
+                      ItemsSource="{Binding MonitorTimeWindows}"
+                      SelectedItem="{Binding SelectedMonitorTimeWindow, Mode=TwoWay}"
+                      Header="Time window to remind me when I have an upcoming lunch (in minutes)"
+                      Margin="0,0,0,20"
+                      HorizontalAlignment="Left">
+                <ComboBox.HeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                    </DataTemplate>
+                </ComboBox.HeaderTemplate>
+            </ComboBox>
+            
+        </StackPanel>
+        
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="{Binding LastTaskStatusMessage}"
+                       Visibility="{Binding LastTaskStatusMessage, Converter={StaticResource NullToVisibilityConverter}}" 
+                       Margin="10"/>
+            <Button Content="See Background Task Last Run Status"
+                    Click="{x:Bind ViewModel.GetStatusButton_OnClick}"
+                    Margin="10"/>
+            
         </StackPanel>
     </Grid>
 </Page>

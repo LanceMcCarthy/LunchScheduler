@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using Windows.ApplicationModel.Background;
 using Windows.Storage;
 using Windows.UI.Notifications;
@@ -14,31 +15,59 @@ namespace LunchScheduler.BackgroundTasks
 {
     public sealed class MonitorLunchAppointmentsTask : IBackgroundTask
     {
+        private ApplicationDataContainer localSettings;
+
         public async void Run(IBackgroundTaskInstance taskInstance)
         {
             var deferral = taskInstance.GetDeferral();
+
+            if(ApplicationData.Current.LocalSettings != null)
+                localSettings = ApplicationData.Current.LocalSettings;
+
             try
             {
                 // UWP Community Toolkit
                 var json = await StorageFileHelper.ReadTextFromLocalFileAsync(Constants.LunchAppointmentsFileName);
 
-                Debug.WriteLine($"--Load-- Lunch Appointments JSON:\r\n{json}");
+                Debug.WriteLine($"Background Task - Appointments File Loaded");
 
                 var appointments = JsonConvert.DeserializeObject<ObservableCollection<LunchAppointment>>(json);
 
                 if (appointments == null || appointments.Count < 1)
+                {
+                    LogStatus($"Background Task - No Appointments found");
                     return;
+                }
+                else
+                {
+                    LogStatus($"Background Task - {appointments.Count} Appointments Found");
+                }
                 
+
+                // Get the user's setting for how far ahead to check if there's an appointment
+                int monitorTimeWindow = 30;
+                object obj;
+                if (localSettings != null && localSettings.Values.TryGetValue("SelectedMonitorTimeWindow", out obj))
+                {
+                    monitorTimeWindow = (int)obj;
+                }
+
                 foreach (var lunch in appointments)
                 {
-                    if (DateTime.Now - lunch.LunchTime < TimeSpan.FromMinutes(30))
+                    // If the lunch appointment is within user's SelectedMonitorTimeWindow, create a notification
+                    if (DateTime.Now - lunch.LunchTime < TimeSpan.FromMinutes(monitorTimeWindow))
                     {
-                        var visual = GenerateToastMessage(lunch);
+                        Debug.WriteLine($"Background Task - Creating Toast for {lunch.Title}");
+
+                        var visual = GenerateToastVisual(lunch);
 
                         var toastContent = new ToastContent
                         {
                             Visual = visual,
-                            Launch = $"?id={lunch.Id}" // Args when the user opens app from toast
+                            // Toast Args. The app will navigate
+                            // to the LunchDetailPage when opened 
+                            // from a toast using the appointment ID
+                            Launch = $"?id={lunch.Id}"
                         };
 
                         var toast = new ToastNotification(toastContent.GetXml())
@@ -52,9 +81,13 @@ namespace LunchScheduler.BackgroundTasks
                     }
                 }
             }
+            catch (FileNotFoundException)
+            {
+                LogStatus($"Background Task - No Appointments File Saved");
+            }
             catch (Exception ex)
             {
-                ApplicationData.Current.LocalSettings.Values["BgTaskStatus"] = $"Error: {ex.Message}";
+                LogStatus($"Background Task - Error: {ex.Message}");
             }
             finally
             {
@@ -62,11 +95,31 @@ namespace LunchScheduler.BackgroundTasks
             }
         }
 
-        private ToastVisual GenerateToastMessage(LunchAppointment lunch)
+        /// <summary>
+        /// Creates a ToastNotification Visual (text, image, etc.)
+        /// </summary>
+        /// <param name="lunch">Appointment to create a visual for</param>
+        /// <returns>A visuial with either the message or a message and photo of a guest</returns>
+        private ToastVisual GenerateToastVisual(LunchAppointment lunch)
         {
             if (lunch.Guests.Count > 0)
             {
                 string message = $"You have lunch at {lunch.LunchTime:t} with";
+
+                for (int i = 0; i < lunch.Guests.Count - 1; i++)
+                {
+                    // Add the proper punctuation and grammar between guest names
+
+                    if (i == 0) 
+                        message += ": "; // First guest
+                    else if (i == lunch.Guests.Count - 1)
+                        message += " and "; // Last guest
+                    else
+                        message += ", ";
+
+                    // Add the guest's name
+                    message += $"{lunch.Guests[i].FullName}";
+                }
 
                 foreach (var lunchGuest in lunch.Guests)
                 {
@@ -102,5 +155,18 @@ namespace LunchScheduler.BackgroundTasks
             };
         }
 
+        /// <summary>
+        /// Logs operational status to LocalSettings and Debug output window
+        /// </summary>
+        /// <param name="message">Status message of operation</param>
+        private void LogStatus(string message)
+        {
+            if(localSettings!=null)
+                localSettings.Values["BgTaskStatus"] = message;
+
+#if DEBUG
+            Debug.WriteLine($"Log - {message}");
+#endif
+        }
     }
 }
