@@ -82,19 +82,35 @@ namespace LunchScheduler.ViewModels
         }
 
         #endregion
-        
+
         #region Methods
 
         public override Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
         {
-            var appts = parameter as ObservableCollection<LunchAppointment>;
+            try
+            {
+                UpdateStatus("loading...");
 
-            if (appts != null)
-                allAppointments = appts;
+                var appts = parameter as ObservableCollection<LunchAppointment>;
+
+                if (appts != null)
+                    allAppointments = appts;
+
+                return base.OnNavigatedToAsync(parameter, mode, state);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"OnNavigatedToAsync Exception: {ex}");
+            }
+            finally
+            {
+                UpdateStatus("", false);
+            }
 
             return base.OnNavigatedToAsync(parameter, mode, state);
         }
-        
+
         /// <summary>
         /// Adds a new lunch
         /// </summary>
@@ -112,8 +128,10 @@ namespace LunchScheduler.ViewModels
 
                 var sortedAppointments = new ObservableCollection<LunchAppointment>(allAppointments.OrderByDescending(a => a.LunchTime).ToList());
 
+                UpdateStatus("saving lunch appointment...");
+
                 // Save updated appointments list to storage
-                await SaveLunchAppointments(sortedAppointments);
+                await FileHelpers.SaveLunchAppointments(sortedAppointments);
 
                 if (BootStrapper.Current.NavigationService.CanGoBack)
                     BootStrapper.Current.NavigationService.GoBack();
@@ -194,8 +212,10 @@ namespace LunchScheduler.ViewModels
                     });
                 }
 
+                UpdateStatus("saving contact photo...");
+
                 // Save the contact's thumnail as a jpg image and get the file path for DataBinding to UIElements
-                lunchGuest.ThumbnailUri = await SaveThumbnailAsync(fullContact);
+                lunchGuest.ThumbnailUri = await FileHelpers.SaveThumbnailAsync(fullContact);
 
                 appointment.Guests.Add(lunchGuest);
             }
@@ -225,89 +245,7 @@ namespace LunchScheduler.ViewModels
             var result = allAppointments.Where(a => a.Guests.Any(g => g == guest));
 
             if (!result.Any())
-                await DeleteThumbnailAsync(guest.ThumbnailUri);
-        }
-
-        /// <summary>
-        /// Saves lunch appointments to storage
-        /// </summary>
-        /// <returns></returns>
-        public async Task SaveLunchAppointments(ObservableCollection<LunchAppointment> appointments)
-        {
-            try
-            {
-                UpdateStatus("saving appointments...");
-
-                var json = JsonConvert.SerializeObject(appointments);
-
-                // UWP Community Toolkit
-                await StorageFileHelper.WriteTextToLocalFileAsync(json, Constants.LunchAppointmentsFileName);
-
-                Debug.WriteLine($"--SAVE-- Lunch Appointments JSON:\r\n{json}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaveLunchAppointments Exception: {ex}");
-            }
-        }
-        
-        /// <summary>
-        /// Save the Contact's thumbnail as a jpg in the app's storage
-        /// </summary>
-        /// <param name="contact">The Contact to save the thumbnail for</param>
-        /// <returns>File path to the jpg image</returns>
-        private static async Task<string> SaveThumbnailAsync(Contact contact)
-        {
-            try
-            {
-                if (contact.Thumbnail == null)
-                    return "";
-
-                using (var stream = await contact.Thumbnail.OpenReadAsync())
-                {
-                    byte[] buffer = new byte[stream.Size];
-                    var readBuffer =
-                        await stream.ReadAsync(buffer.AsBuffer(), (uint)buffer.Length, InputStreamOptions.None);
-
-                    var file = await ApplicationData.Current.LocalFolder.CreateFileAsync($"{contact.FullName}_Thumb.jpg",
-                                CreationCollisionOption.ReplaceExisting);
-
-                    using (var fileStream = await file.OpenStreamForWriteAsync())
-                    {
-                        await fileStream.WriteAsync(readBuffer.ToArray(), 0, (int)readBuffer.Length);
-                    }
-
-                    Debug.WriteLine($"Thumbnail saved - Path: {file.Path}");
-
-                    // Return the saved image's file path
-                    return file.Path;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaveThumbnailAsync Exception: {ex}");
-                return "";
-            }
-        }
-
-        /// <summary>
-        /// Checks to see if there is a thumbnail photo and deletes it
-        /// </summary>
-        /// <param name="filePath">File path to lunch guest's photo</param>
-        /// <returns></returns>
-        private static async Task DeleteThumbnailAsync(string filePath)
-        {
-            try
-            {
-                var file = await ApplicationData.Current.LocalFolder.TryGetItemAsync(filePath);
-
-                if (file != null)
-                    await file.DeleteAsync(StorageDeleteOption.PermanentDelete);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"DeleteThumbnailAsync Exception: {ex}");
-            }
+                await FileHelpers.DeleteThumbnailAsync(guest.ThumbnailUri);
         }
 
         /// <summary>

@@ -36,10 +36,11 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using LunchScheduler.BackgroundTasks;
 using LunchScheduler.Helpers;
+using Template10.Mvvm;
 
 namespace LunchScheduler.ViewModels
 {
-    public class OptionsViewModel : Template10.Mvvm.ViewModelBase
+    public class OptionsViewModel : ViewModelBase
     {
         private readonly ApplicationDataContainer localSettings;
         private const string MonitorLunchesTaskFriendlyName = "LunchMonitorTask";
@@ -158,11 +159,17 @@ namespace LunchScheduler.ViewModels
         {
             try
             {
+                UpdateStatus("loading...");
+
                 IsBackgroundTaskEnabled = await BackgroundTaskHelpers.CheckBackgroundTasksAsync(MonitorLunchesTaskFriendlyName);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"OptionsViewModel Init Exception: {ex}");
+                Debug.WriteLine($"OnNavigatedToAsync Exception: {ex}");
+            }
+            finally
+            {
+                UpdateStatus("", false);
             }
         }
 

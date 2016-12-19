@@ -23,37 +23,169 @@
 //  ---------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Email;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Navigation;
+using Microsoft.Services.Store.Engagement;
 using Microsoft.Toolkit.Uwp.Helpers;
+using Template10.Mvvm;
 
 namespace LunchScheduler.ViewModels
 {
-    public class AboutViewModel : Template10.Mvvm.ViewModelBase
+    public class AboutViewModel : ViewModelBase
     {
+        private string appName;
+        private string appVersion;
+        private string operatingSystem;
+        private string operatingSystemVersion;
+        private string deviceFamily;
+        private string deviceModel;
+        private string deviceManufacturer;
+        private string availableMemory;
+        private Visibility feedbackHubButtonVisibility;
+        private bool isBusy;
+        private string isBusyMessage;
+
         public AboutViewModel()
         {
             if (DesignMode.DesignModeEnabled)
+            {
+                AppName = "Lunch Scheduler";
+                AppVersion = "v. 1.0.0";
+                DeviceFamily = "Mobile";
+                OperatingSystem = "Windows 10";
+                OperatingSystemVersion = $"v. 10.10493";
+                AvailableMemory = $"3856 MB";
+                DeviceModel = "Surface Book";
+                DeviceManufacturer = "Microsoft";
                 return;
+            }
         }
 
-        public string AppName => SystemInformation.ApplicationName;
+        #region Properties
 
-        public string AppVersion => $"v. {SystemInformation.ApplicationVersion.Major}.{SystemInformation.ApplicationVersion.Minor}.{SystemInformation.ApplicationVersion.Build}";
+        public string AppName
+        {
+            get { return appName; }
+            set { Set(ref appName, value); }
+        }
 
-        public string DeviceFamily => SystemInformation.DeviceFamily;
-
-        public string OperatingSystem => SystemInformation.OperatingSystem;
-
-        public string OperatingSystemVersion => $"v. {SystemInformation.OperatingSystemVersion.Major}.{SystemInformation.OperatingSystemVersion.Minor}.{SystemInformation.OperatingSystemVersion.Build}.{SystemInformation.OperatingSystemVersion.Revision}";
-
-        public string AvailableMemory => $"{SystemInformation.AvailableMemory} MB";
-
-        public string DeviceModel => SystemInformation.DeviceModel;
-
-        public string DeviceManufacturer => SystemInformation.DeviceManufacturer;
+        public string AppVersion
+        {
+            get{ return appVersion; }
+            set { Set(ref appVersion, value); }
+        }
         
+        public string OperatingSystem
+        {
+            get { return operatingSystem;}
+            set { Set(ref operatingSystem, value); }
+        }
+
+        public string OperatingSystemVersion
+        {
+            get { return operatingSystemVersion; }
+            set { Set(ref operatingSystemVersion, value); }
+        }
+        
+        public string DeviceFamily
+        {
+            get { return deviceFamily; }
+            set { Set(ref deviceFamily, value); }
+        }
+
+        public string DeviceModel
+        {
+            get { return deviceModel; }
+            set { Set(ref deviceModel, value); }
+        }
+
+        public string DeviceManufacturer
+        {
+            get { return deviceManufacturer; }
+            set { Set(ref deviceManufacturer, value); }
+        }
+
+        public string AvailableMemory
+        {
+            get { return availableMemory; }
+            set { Set(ref availableMemory, value); }
+        }
+
+        public Visibility FeedbackHubButtonVisibility
+        {
+            get { return feedbackHubButtonVisibility; }
+            set { Set(ref feedbackHubButtonVisibility, value); }
+        }
+
+        public bool IsBusy
+        {
+            get { return isBusy; }
+            set { Set(ref isBusy, value); }
+        }
+
+        public string IsBusyMessage
+        {
+            get { return isBusyMessage; }
+            set { Set(ref isBusyMessage, value); }
+        }
+
+        #endregion
+        
+        #region Methods
+        
+        public override Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
+        {
+            try
+            {
+                UpdateStatus("loading...");
+
+                // show the Fewedback button if the user's device OS supports the FeedbackHub
+                FeedbackHubButtonVisibility = StoreServicesFeedbackLauncher.IsSupported()
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+
+                AppName = SystemInformation.ApplicationName;
+                AppVersion = $"v. {SystemInformation.ApplicationVersion.Major}.{SystemInformation.ApplicationVersion.Minor}.{SystemInformation.ApplicationVersion.Build}";
+                DeviceFamily = SystemInformation.DeviceFamily;
+                OperatingSystem = SystemInformation.OperatingSystem;
+                OperatingSystemVersion = $"v. {SystemInformation.OperatingSystemVersion.Major}.{SystemInformation.OperatingSystemVersion.Minor}.{SystemInformation.OperatingSystemVersion.Build}.{SystemInformation.OperatingSystemVersion.Revision}";
+                AvailableMemory = $"{SystemInformation.AvailableMemory} MB";
+                DeviceModel = SystemInformation.DeviceModel;
+                DeviceManufacturer = SystemInformation.DeviceManufacturer;
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"OnNavigatedToAsync Exception: {ex}");
+            }
+            finally
+            {
+                UpdateStatus("", false);
+            }
+
+            return base.OnNavigatedToAsync(parameter, mode, state);
+        }
+
+        /// <summary>
+        /// Shows busy indicator
+        /// </summary>
+        /// <param name="message">busy message to show</param>
+        /// <param name="showBusyIndicator">toggles the busy indicator's visibility</param>
+        private void UpdateStatus(string message, bool showBusyIndicator = true)
+        {
+            IsBusy = showBusyIndicator;
+            IsBusyMessage = message;
+        }
+
+        #endregion
+
+        #region Event handlers
+
         public async void ContactDeveloperButton_OnClick(object sender, RoutedEventArgs e)
         {
             var emailMessage = new EmailMessage();
@@ -65,5 +197,12 @@ namespace LunchScheduler.ViewModels
 
             await EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
+
+        public async void LeaveFeedbackButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            await StoreServicesFeedbackLauncher.GetDefault().LaunchAsync();
+        }
+
+        #endregion
     }
 }

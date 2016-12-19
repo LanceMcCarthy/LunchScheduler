@@ -18,7 +18,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <Grid>
+        <Grid x:Name="GuestDetailsGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -50,7 +50,6 @@
                 </Grid>
 
                 <TextBlock Text="{Binding SelectedGuest.FullName}"
-                           Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,10"
                            Grid.Row="1"
@@ -70,8 +69,27 @@
                       ItemContainerStyle="{StaticResource GridViewItemStyle}"
                       Visibility="{Binding SelectedGuest.EmailAddresses, Converter={StaticResource CollectionVisibilityConverter}}"
                       Header="Email Addresses"
-                      Margin="10,10,0,0"
+                      Margin="10,0,0,0"
                       Grid.Row="2" />
+
+            <GridView ItemsSource="{Binding InvitedAppointments}"
+                      ItemContainerStyle="{StaticResource GridViewItemStyle}"
+                      Visibility="{Binding InvitedAppointments, Converter={StaticResource CollectionVisibilityConverter}}"
+                      Header="All Invited Lunches"
+                      Margin="10,0,0,0"
+                      Grid.Row="3">
+                <GridView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}"
+                                    Padding="10"
+                                    Margin="0,10,0,10">
+                            <TextBlock Text="{Binding Title}"/>
+                            <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}" />
+                            <TextBlock Text="{Binding Location.Name}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
         </Grid>
 
         <CommandBar Grid.Row="1">

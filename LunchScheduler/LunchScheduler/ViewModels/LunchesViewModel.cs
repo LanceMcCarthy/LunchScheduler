@@ -62,49 +62,20 @@ namespace LunchScheduler.ViewModels
         {
             try
             {
-                LunchAppointments = await LoadLunchAppointments();
+                UpdateStatus("loading...");
+
+                LunchAppointments = await FileHelpers.LoadLunchAppointments();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"LunchesViewModel OnNavigatedToAsync Exception: {ex}");
-            }
-        }
-
-        /// <summary>
-        /// Loads saved lunch appointments from file
-        /// </summary>
-        /// <returns>ObservableCollection of LunchAppointments</returns>
-        public async Task<ObservableCollection<LunchAppointment>> LoadLunchAppointments()
-        {
-            try
-            {
-                UpdateStatus("loading lunch appointments...");
-
-                // UWP Community Toolkit
-                var json = await StorageFileHelper.ReadTextFromLocalFileAsync(Constants.LunchAppointmentsFileName);
-
-                Debug.WriteLine($"--Load-- Lunch Appointments JSON:\r\n{json}");
-
-                var appointments = JsonConvert.DeserializeObject<ObservableCollection<LunchAppointment>>(json);
-
-                return appointments;
-            }
-            catch (FileNotFoundException fnfException)
-            {
-                Debug.WriteLine($"LoadLunchAppointments FileNotFoundException: {fnfException}");
-                return new ObservableCollection<LunchAppointment>();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"LoadLunchAppointments Exception: {ex}");
-                return new ObservableCollection<LunchAppointment>();
+                Debug.WriteLine($"OnNavigatedToAsync Exception: {ex}");
             }
             finally
             {
                 UpdateStatus("", false);
             }
         }
-
+        
         /// <summary>
         /// Shows busy indicator
         /// </summary>
@@ -135,7 +106,6 @@ namespace LunchScheduler.ViewModels
             BootStrapper.Current.NavigationService.Navigate(typeof(LunchDetailPage), LunchAppointments);
         }
         
-
         #endregion
         
     }

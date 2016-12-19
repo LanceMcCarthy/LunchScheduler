@@ -84,6 +84,8 @@ namespace LunchScheduler.ViewModels
         {
             try
             {
+                UpdateStatus("loading...");
+
                 var lunchAppointments = await LoadLunchAppointments();
 
                 var guests = lunchAppointments.Where(a => a.Guests.Count > 0).SelectMany(a => a.Guests);
@@ -97,6 +99,10 @@ namespace LunchScheduler.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"GuestsViewModel Init Exception: {ex}");
+            }
+            finally
+            {
+                UpdateStatus("", false);
             }
         }
 

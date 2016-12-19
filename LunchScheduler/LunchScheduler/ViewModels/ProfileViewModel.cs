@@ -10,10 +10,11 @@ using LunchScheduler.Data.Common;
 using LunchScheduler.Data.Models;
 using Microsoft.Toolkit.Uwp.Services.Facebook;
 using Microsoft.Toolkit.Uwp.Services.Twitter;
+using Template10.Mvvm;
 
 namespace LunchScheduler.ViewModels
 {
-    public class ProfileViewModel : Template10.Mvvm.ViewModelBase
+    public class ProfileViewModel : ViewModelBase
     {
         private readonly ApplicationDataContainer localSettings;
         private string connectedServiceName = "";
@@ -253,6 +254,5 @@ namespace LunchScheduler.ViewModels
         }
 
         #endregion
-
     }
 }

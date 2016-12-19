@@ -1,27 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Email;
-using Windows.Storage;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
 using LunchScheduler.Data.Common;
 using LunchScheduler.Data.Models;
 using LunchScheduler.Helpers;
-using Microsoft.Toolkit.Uwp;
 using Microsoft.Toolkit.Uwp.Services.Facebook;
 using Microsoft.Toolkit.Uwp.Services.Twitter;
-using Newtonsoft.Json;
+using Template10.Mvvm;
 
 namespace LunchScheduler.ViewModels
 {
-    public class LunchDetailViewModel : Template10.Mvvm.ViewModelBase
+    public class LunchDetailViewModel : ViewModelBase
     {
         private LunchAppointment selectedAppointment;
         private bool isBusy;
@@ -34,6 +30,8 @@ namespace LunchScheduler.ViewModels
                 SelectedAppointment = DesignTimeHelpers.GenerateSampleAppointment();
             }
         }
+
+        #region Properties
 
         public LunchAppointment SelectedAppointment
         {
@@ -53,18 +51,42 @@ namespace LunchScheduler.ViewModels
             set { Set(ref isBusyMessage, value); }
         }
 
+        #endregion
+        
+        #region Methods
+
         public override Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
         {
-            var appointment = parameter as LunchAppointment;
-
-            if (appointment != null)
+            try
             {
-                SelectedAppointment = appointment;
+                UpdateStatus("loading...");
+
+                var appointment = parameter as LunchAppointment;
+
+                if (appointment != null)
+                {
+                    SelectedAppointment = appointment;
+                }
+
+                return base.OnNavigatedToAsync(parameter, mode, state);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"OnNavigatedToAsync Exception: {ex}");
+            }
+            finally
+            {
+                UpdateStatus("", false);
             }
 
             return base.OnNavigatedToAsync(parameter, mode, state);
         }
 
+        /// <summary>
+        /// Creates a message using the lunch title, guests and location
+        /// </summary>
+        /// <returns></returns>
         private string ConstructMessage()
         {
             string message = $"Having lunch at {SelectedAppointment.LunchTime:t} with";
@@ -105,84 +127,8 @@ namespace LunchScheduler.ViewModels
             IsBusy = showBusyIndicator;
             IsBusyMessage = message;
         }
-        
-        /// <summary>
-        /// Loads saved lunch appointments from file
-        /// </summary>
-        /// <returns>ObservableCollection of LunchAppointments</returns>
-        private async Task<ObservableCollection<LunchAppointment>> LoadLunchAppointments()
-        {
-            try
-            {
-                UpdateStatus("loading lunch appointments...");
 
-                // UWP Community Toolkit
-                var json = await StorageFileHelper.ReadTextFromLocalFileAsync(Constants.LunchAppointmentsFileName);
-
-                Debug.WriteLine($"--Load-- Lunch Appointments JSON:\r\n{json}");
-
-                var appointments = JsonConvert.DeserializeObject<ObservableCollection<LunchAppointment>>(json);
-
-                return appointments;
-            }
-            catch (FileNotFoundException fnfException)
-            {
-                Debug.WriteLine($"LoadLunchAppointments FileNotFoundException: {fnfException}");
-                return new ObservableCollection<LunchAppointment>();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"LoadLunchAppointments Exception: {ex}");
-                return new ObservableCollection<LunchAppointment>();
-            }
-            finally
-            {
-                UpdateStatus("", false);
-            }
-        }
-
-        /// <summary>
-        /// Saves lunch appointments to storage
-        /// </summary>
-        /// <returns></returns>
-        private async Task SaveLunchAppointments(ObservableCollection<LunchAppointment> appointments)
-        {
-            try
-            {
-                UpdateStatus("saving appointments...");
-
-                var json = JsonConvert.SerializeObject(appointments);
-
-                // UWP Community Toolkit
-                await StorageFileHelper.WriteTextToLocalFileAsync(json, Constants.LunchAppointmentsFileName);
-
-                Debug.WriteLine($"--SAVE-- Lunch Appointments JSON:\r\n{json}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaveLunchAppointments Exception: {ex}");
-            }
-        }
-        
-        /// <summary>
-        /// Checks to see if there is a thumbnail photo and deletes it
-        /// </summary>
-        /// <param name="filePath">File path to lunch guest's photo</param>
-        /// <returns></returns>
-        private async Task DeleteThumbnailAsync(string filePath)
-        {
-            try
-            {
-                var file = await ApplicationData.Current.LocalFolder.TryGetItemAsync(filePath);
-
-                if (file != null)
-                    await file.DeleteAsync(StorageDeleteOption.PermanentDelete);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"DeleteThumbnailAsync Exception: {ex}");
-            }
-        }
+        #endregion
 
         #region Event handlers
 
@@ -190,20 +136,22 @@ namespace LunchScheduler.ViewModels
         {
             if (SelectedAppointment == null)
                 return;
-
-            var md = new MessageDialog("Are you sure you want to delete?", "Delete Lunch");
-            md.Commands.Add(new UICommand("delete"));
-            md.Commands.Add(new UICommand("cancel"));
-            var dialogResult = await md.ShowAsync();
-
-            if (dialogResult.Label == "cancel")
-                return;
-
+            
             try
             {
                 UpdateStatus("deleting appointment...");
 
-                var appointments = await LoadLunchAppointments();
+                var md = new MessageDialog("Are you sure you want to delete?", "Delete Lunch");
+                md.Commands.Add(new UICommand("delete"));
+                md.Commands.Add(new UICommand("cancel"));
+                var dialogResult = await md.ShowAsync();
+
+                if (dialogResult.Label == "cancel")
+                    return;
+
+                UpdateStatus("loading all appointments...");
+
+                var appointments = await FileHelpers.LoadLunchAppointments();
 
                 // First let's clean up any guest photo files if they're not in any other appointments
                 foreach (var guest in SelectedAppointment.Guests)
@@ -211,14 +159,17 @@ namespace LunchScheduler.ViewModels
                     var result = appointments.Where(a => a.Guests.Any(g => g == guest));
 
                     if (!result.Any())
-                        await DeleteThumbnailAsync(guest.ThumbnailUri);
+                    {
+                        UpdateStatus($"deleting {guest.FullName}'s photo...");
+                        await FileHelpers.DeleteThumbnailAsync(guest.ThumbnailUri);
+                    }
                 }
 
                 // Now we can remove the appointment
                 appointments.Remove(SelectedAppointment);
 
                 // Save the updated list
-                await SaveLunchAppointments(appointments);
+                await FileHelpers.SaveLunchAppointments(appointments);
 
             }
             catch (Exception ex)
@@ -299,7 +250,7 @@ namespace LunchScheduler.ViewModels
             {
                 if (SelectedAppointment == null)
                     return;
-                
+
                 var message = ConstructMessage();
 
                 // UWP Toolkit

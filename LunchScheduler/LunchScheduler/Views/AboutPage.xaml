@@ -56,8 +56,19 @@
             <TextBlock Text="{x:Bind ViewModel.AvailableMemory}" />
         </StackPanel>
         
-        <Button x:Name="ContactUsButton" Content="Questions? Contact Us!" Margin="10" Grid.Row="2" HorizontalAlignment="Stretch"/>
-
+        <StackPanel Grid.Row="2">
+            <Button x:Name="FeedbackButton"
+                    Content="Leave feedback or request feature"
+                    Margin="10"
+                    HorizontalAlignment="Stretch" 
+                    Click="{x:Bind ViewModel.LeaveFeedbackButton_OnClick}"/>
+            <Button x:Name="ContactUsButton"
+                    Content="Questions? Contact Us!"
+                    Margin="10"
+                    HorizontalAlignment="Stretch"
+                    Click="{x:Bind ViewModel.ContactDeveloperButton_OnClick}" />
+        </StackPanel>
+        
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState x:Name="wideState">
