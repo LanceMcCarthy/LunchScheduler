@@ -400,7 +400,7 @@ namespace LunchScheduler.ViewModels
                         "TEST", 
                         message, 
                         "Lunch Scheduler demo",
-                        "https://github.com/Microsoft/Windows-universal-samples/blob/master/SharedContent/media/splash-sdk.png");
+                        "https://raw.githubusercontent.com/LanceMcCarthy/LunchScheduler/master/LunchScheduler/Screenshots/GuestDetailPage.png");
                 }
                 else
                 {
