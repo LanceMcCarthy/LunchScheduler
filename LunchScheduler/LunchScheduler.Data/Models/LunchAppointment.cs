@@ -76,5 +76,22 @@ namespace LunchScheduler.Data.Models
             get { return guests ?? (guests = new ObservableCollection<LunchGuest>()); }
             set { SetProperty(ref guests, value); }
         }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is LunchAppointment))
+                return false;
+            
+            return string.Equals(id, ((LunchAppointment)obj).id);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = id?.GetHashCode() ?? 0;
+                return hashCode;
+            }
+        }
     }
 }

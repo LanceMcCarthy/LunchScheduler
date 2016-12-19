@@ -7,8 +7,7 @@
     "Microsoft.Toolkit.Uwp.UI": "1.2.0",
     "Microsoft.Toolkit.Uwp.UI.Controls": "1.2.0",
     "Newtonsoft.Json": "9.0.1",
-    "Template10": "1.1.12",
-    "WindowsStateTriggers": "1.1.0"
+    "Template10": "1.1.12"
   },
   "frameworks": {
     "uap10.0": {}

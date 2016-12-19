@@ -4,7 +4,7 @@
   <mp:PhoneIdentity PhoneProductId="77773290-80a4-4651-80ec-cfbafe091dab" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>LunchScheduler</DisplayName>
-    <PublisherDisplayName>lance</PublisherDisplayName>
+    <PublisherDisplayName>Lance McCarthy</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>
@@ -25,16 +25,16 @@
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
-        <uap:Extension Category="windows.protocol">
-          <uap:Protocol Name="lunchscheduler-invite">
-            <uap:DisplayName>LunchScheduler</uap:DisplayName>
-          </uap:Protocol>
-        </uap:Extension>
         <Extension Category="windows.backgroundTasks" EntryPoint="LunchScheduler.BackgroundTasks.MonitorLunchAppointmentsTask">
           <BackgroundTasks>
             <Task Type="timer" />
           </BackgroundTasks>
         </Extension>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="lunchscheduler-invite">
+            <uap:DisplayName>LunchScheduler</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
       </Extensions>
     </Application>
   </Applications>

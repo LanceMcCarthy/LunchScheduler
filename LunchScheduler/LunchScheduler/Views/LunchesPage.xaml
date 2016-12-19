@@ -14,17 +14,22 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <Grid x:Name="HeaderGrid"
+              Background="{ThemeResource AppBarSeparatorForegroundThemeBrush}"
+              Height="48" />
+
         <GridView x:Name="UpcomingLunchesGridView"
                   ItemsSource="{Binding LunchAppointments}"
-                  ItemTemplate="{StaticResource LunchAppointmentDataTemplate}"
+                  ItemTemplate="{StaticResource LargeAppointmentDataTemplate}"
                   SelectionChanged="{x:Bind ViewModel.UpcomingLunchesGridView_OnSelectionChanged}"
                   SelectionMode="Single"
                   Header="Scheduled Lunches"
-                  Grid.Row="0">
+                  Grid.Row="1">
             <GridView.HeaderTemplate>
                 <DataTemplate>
                     <Grid>
@@ -37,10 +42,14 @@
             </GridView.HeaderTemplate>
         </GridView>
 
-        <CommandBar Grid.Row="1">
+        <CommandBar Grid.Row="2">
             <AppBarButton Icon="Add"
                           Label="add lunch"
                           Click="{x:Bind ViewModel.AddAppointmentAppBarButton_OnClick}" />
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Label="clear old appointments" 
+                              Click="{x:Bind ViewModel.ClearOldAppointmentsAppBarButton_OnClick}"/>
+            </CommandBar.SecondaryCommands>
         </CommandBar>
 
         <Grid x:Name="BusyOverlayGrid"
@@ -60,5 +69,27 @@
             </StackPanel>
         </Grid>
 
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="wideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="641" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="narrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>

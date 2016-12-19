@@ -9,6 +9,20 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LunchScheduler.Data", "Lunc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LunchScheduler.BackgroundTasks", "LunchScheduler.BackgroundTasks\LunchScheduler.BackgroundTasks.csproj", "{37B6E7D3-7912-4101-A6B0-43C1002613CA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Screenshots", "Screenshots", "{04504AE6-CB84-48EB-8143-18C6774BA5DF}"
+	ProjectSection(SolutionItems) = preProject
+		Screenshots\AddLunchPage.png = Screenshots\AddLunchPage.png
+		Screenshots\AddLunchPage_Mobile.png = Screenshots\AddLunchPage_Mobile.png
+		Screenshots\GuestDetailPage.png = Screenshots\GuestDetailPage.png
+		Screenshots\GuestDetailPage_Mobile.png = Screenshots\GuestDetailPage_Mobile.png
+		Screenshots\GuestsPage.png = Screenshots\GuestsPage.png
+		Screenshots\GuestsPage_Mobile.png = Screenshots\GuestsPage_Mobile.png
+		Screenshots\LunchDetailsPage.png = Screenshots\LunchDetailsPage.png
+		Screenshots\LunchDetailsPage_Mobile.png = Screenshots\LunchDetailsPage_Mobile.png
+		Screenshots\LunchesPage.png = Screenshots\LunchesPage.png
+		Screenshots\LunchesPage_Mobile.png = Screenshots\LunchesPage_Mobile.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

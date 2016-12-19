@@ -14,12 +14,17 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
-        <Grid x:Name="StatusGrid" Background="{Binding CurrentStatusBrush}" Padding="10">
+
+        <Grid x:Name="HeaderGrid"
+              Background="{ThemeResource AppBarSeparatorForegroundThemeBrush}"
+              Height="48" />
+
+        <Grid x:Name="StatusGrid" Background="{Binding CurrentStatusBrush}" Padding="10" Grid.Row="1">
             <StackPanel>
                 <TextBlock Text="Reminders Background Task Status"
                            HorizontalAlignment="Center"
@@ -38,7 +43,7 @@
         <StackPanel x:Name="OptionsPanel"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
-                    Grid.Row="1"
+                    Grid.Row="2"
                     Margin="20">
             <ToggleSwitch Header="Lunch Reminders" IsOn="{Binding IsBackgroundTaskEnabled, Mode=TwoWay}"/>
             <ComboBox x:Name="FrequencyComboBox"
@@ -57,11 +62,13 @@
             
         </StackPanel>
         
-        <StackPanel Grid.Row="2">
+        <StackPanel Grid.Row="3">
             <TextBlock Text="{Binding LastTaskStatusMessage}"
+                       TextWrapping="Wrap"
                        Visibility="{Binding LastTaskStatusMessage, Converter={StaticResource NullToVisibilityConverter}}" 
                        Margin="10"/>
-            <Button Content="See Background Task Last Run Status"
+            <Button x:Name="CheckStatusButton"
+                    Content="check background task status"
                     Click="{x:Bind ViewModel.GetStatusButton_OnClick}"
                     Margin="10"/>
             
@@ -71,7 +78,7 @@
               Visibility="{Binding IsBusy}"
               Background="{ThemeResource ListViewItemBackgroundSelectedPressed}"
               Grid.Row="0"
-              Grid.RowSpan="3">
+              Grid.RowSpan="4">
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center">
                 <ProgressRing IsActive="{Binding IsBusy}"
@@ -83,5 +90,32 @@
                            HorizontalAlignment="Center" />
             </StackPanel>
         </Grid>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="wideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="641" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Collapsed" />
+                        <Setter Target="CheckStatusButton.HorizontalAlignment"
+                                Value="Left" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="narrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Visible" />
+                        <Setter Target="CheckStatusButton.HorizontalAlignment"
+                                Value="Stretch" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>

@@ -10,15 +10,10 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-       <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <!-- <Grid x:Name="PageHeaderGrid"
-              Height="48"
-              Background="{ThemeResource AppBarSeparatorForegroundThemeBrush}" />-->
-        
-        <controls:HamburgerMenu x:Name="Menu" Grid.Row="1"
+        <controls:HamburgerMenu x:Name="Menu"
+                                VisualStateNarrowMinWidth="0"
+                                VisualStateNormalMinWidth="641"
+                                VisualStateWideMinWidth="1000"
                                 NavButtonForeground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                                 NavButtonCheckedForeground="{ThemeResource ApplicationForegroundThemeBrush}"
                                 NavButtonHoverBackground="{ThemeResource ListBoxItemPointerOverBackgroundThemeBrush}"
@@ -31,7 +26,7 @@
                                               ClearHistory="True">
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center">
-                        <SymbolIcon Symbol="Calendar"
+                        <SymbolIcon Symbol="Home"
                                     Width="48"
                                     Height="48" />
                         <TextBlock Text="Home"
@@ -39,14 +34,13 @@
                                    VerticalAlignment="Center" />
                     </StackPanel>
                 </controls:HamburgerButtonInfo>
-
                 <controls:HamburgerButtonInfo PageType="views:GuestsPage">
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center">
                         <SymbolIcon Symbol="People"
                                     Width="48"
                                     Height="48" />
-                        <TextBlock Text="Calendar"
+                        <TextBlock Text="Guests"
                                    Margin="12, 0, 0, 0"
                                    VerticalAlignment="Center" />
                     </StackPanel>
@@ -60,18 +54,7 @@
                         <SymbolIcon Symbol="Help"
                                     Width="48"
                                     Height="48" />
-                        <TextBlock Text="Options"
-                                   Margin="12, 0, 0, 0"
-                                   VerticalAlignment="Center" />
-                    </StackPanel>
-                </controls:HamburgerButtonInfo>
-                <controls:HamburgerButtonInfo PageType="views:ProfilePage">
-                    <StackPanel Orientation="Horizontal"
-                                VerticalAlignment="Center">
-                        <SymbolIcon Symbol="Contact2"
-                                    Width="48"
-                                    Height="48" />
-                        <TextBlock Text="Profile"
+                        <TextBlock Text="About"
                                    Margin="12, 0, 0, 0"
                                    VerticalAlignment="Center" />
                     </StackPanel>
@@ -89,28 +72,5 @@
                 </controls:HamburgerButtonInfo>
             </controls:HamburgerMenu.SecondaryButtons>
         </controls:HamburgerMenu>
-
-        <!--<VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="PageSizeVisualStateGroup">
-                <VisualState x:Name="wideState">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="641" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="PageHeaderGrid.Visibility"
-                                Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="narrowState">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="0" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="PageHeaderGrid.Visibility"
-                                Value="Visible" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>-->
     </Grid>
 </Page>

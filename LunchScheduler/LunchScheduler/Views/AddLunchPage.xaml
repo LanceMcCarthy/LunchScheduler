@@ -14,10 +14,16 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <ScrollViewer>
+
+        <Grid x:Name="HeaderGrid"
+              Background="{ThemeResource AppBarSeparatorForegroundThemeBrush}"
+              Height="48" />
+
+        <ScrollViewer Grid.Row="1">
             <Grid Padding="10">
                 <Grid.RowDefinitions>
                     <RowDefinition />
@@ -50,8 +56,8 @@
                     
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
+                            <ColumnDefinition x:Name="LeftDateTimeColumn" />
+                            <ColumnDefinition x:Name="RightDateTimeColumn" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition/>
@@ -137,7 +143,7 @@
             </Grid>
         </ScrollViewer>
         
-        <CommandBar Grid.Row="1">
+        <CommandBar Grid.Row="2">
             <AppBarButton Icon="Save"
                           Label="save"
                           Click="{x:Bind ViewModel.SaveLunchToAddButton_OnClick}" />
@@ -170,12 +176,16 @@
                         <AdaptiveTrigger MinWindowWidth="641" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Collapsed" />
                         <Setter Target="AddLunchGuestButton.HorizontalAlignment"
                                 Value="Left" />
                         <Setter Target="LunchTimePicker.(Grid.Row)"
                                 Value="0" />
                         <Setter Target="LunchTimePicker.(Grid.Column)"
                                 Value="1" />
+                        <Setter Target="RightDateTimeColumn.Width"
+                                Value="*" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="narrowState">
@@ -183,12 +193,16 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Visible" />
                         <Setter Target="AddLunchGuestButton.HorizontalAlignment"
                                 Value="Stretch" />
                         <Setter Target="LunchTimePicker.(Grid.Row)"
                                 Value="1" />
                         <Setter Target="LunchTimePicker.(Grid.Column)"
                                 Value="0" />
+                        <Setter Target="RightDateTimeColumn.Width"
+                                Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

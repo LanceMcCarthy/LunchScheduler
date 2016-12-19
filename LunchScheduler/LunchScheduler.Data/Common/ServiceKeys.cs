@@ -38,7 +38,7 @@ namespace LunchScheduler.Data.Common
 
         // Bing UWP Community Toolkit Services
         // See here for setup http://docs.uwpcommunitytoolkit.com/en/master/services/Bing/
-        public const string BingApiKey = "62416a5096c64b7b9e0bec7636a5d8e4";
+        public const string BingApiKey = "";
 
         public const string CallbackUri = "http://www.bing.com";
     }

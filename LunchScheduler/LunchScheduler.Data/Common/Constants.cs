@@ -26,7 +26,14 @@ namespace LunchScheduler.Data.Common
 {
     public static class Constants
     {
+        // file names
         public const string LunchAppointmentsFileName = "LunchAppointments.json";
-        public const string ProfileViewModelFileName = "CachedProfileViewModel.json";
+
+        // Setting keys
+        public const string SelectedMonitorTimeWindowSettingsKey = "SelectedMonitorTimeWindow";
+        public const string BackgroundTaskStatusSettingsKey = "BgTaskStatus";
+
+        // Background task friendly names
+        public const string MonitorLunchesTaskFriendlyName = "LunchMonitorTask";
     }
 }

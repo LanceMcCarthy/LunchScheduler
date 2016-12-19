@@ -35,6 +35,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using LunchScheduler.BackgroundTasks;
+using LunchScheduler.Data.Common;
 using LunchScheduler.Helpers;
 using Template10.Mvvm;
 
@@ -42,11 +43,11 @@ namespace LunchScheduler.ViewModels
 {
     public class OptionsViewModel : ViewModelBase
     {
+        private bool isInitialized = false;
         private readonly ApplicationDataContainer localSettings;
-        private const string MonitorLunchesTaskFriendlyName = "LunchMonitorTask";
         private bool isBackgroundTaskEnabled;
         private string lastTaskStatusMessage;
-        private string currentStatus = "Reminders Background Task Disabled";
+        private string currentStatus = "Background task not running";
         private SolidColorBrush currentStatusBrush = new SolidColorBrush(Colors.Red);
         private List<int> monitorTimeWindows;
         private int selectedMonitorTimeWindow = 30;
@@ -69,6 +70,10 @@ namespace LunchScheduler.ViewModels
             set
             {
                 Set(ref isBackgroundTaskEnabled, value);
+
+                // Prevents registering the task multiple times when the view model first loads
+                if (!isInitialized)
+                    return;
 
                 // Enable or disable the task accordingly
                 if (value)
@@ -98,7 +103,7 @@ namespace LunchScheduler.ViewModels
                     return lastTaskStatusMessage;
 
                 object obj;
-                if (localSettings != null && localSettings.Values.TryGetValue("BgTaskStatus", out obj))
+                if (localSettings != null && localSettings.Values.TryGetValue(Constants.BackgroundTaskStatusSettingsKey, out obj))
                 {
                     lastTaskStatusMessage = obj.ToString();
                 }
@@ -121,7 +126,7 @@ namespace LunchScheduler.ViewModels
                     return selectedMonitorTimeWindow;
 
                 object obj;
-                if (localSettings != null && localSettings.Values.TryGetValue("SelectedMonitorTimeWindow", out obj))
+                if (localSettings != null && localSettings.Values.TryGetValue(Constants.SelectedMonitorTimeWindowSettingsKey, out obj))
                 {
                     selectedMonitorTimeWindow = (int)obj;
                 }
@@ -133,7 +138,7 @@ namespace LunchScheduler.ViewModels
                 Set(ref selectedMonitorTimeWindow, value);
 
                 if (localSettings != null)
-                    localSettings.Values["SelectedMonitorTimeWindow"] = selectedMonitorTimeWindow;
+                    localSettings.Values[Constants.SelectedMonitorTimeWindowSettingsKey] = selectedMonitorTimeWindow;
 
                 EnableBackgroundTask(selectedMonitorTimeWindow);
             }
@@ -153,15 +158,29 @@ namespace LunchScheduler.ViewModels
 
         #endregion
 
-        #region Methods and Event handlers
+        #region Methods
 
         public override async Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
         {
             try
             {
+                // This is so that we don't re-register the task again (see the IsBackgroundTaskEnabled property setter)
+                isInitialized = false;
+
                 UpdateStatus("loading...");
 
-                IsBackgroundTaskEnabled = await BackgroundTaskHelpers.CheckBackgroundTasksAsync(MonitorLunchesTaskFriendlyName);
+                IsBackgroundTaskEnabled = await BackgroundTaskHelpers.CheckBackgroundTasksAsync(Constants.MonitorLunchesTaskFriendlyName);
+
+                if (IsBackgroundTaskEnabled)
+                {
+                    ShowBackgroundTaskStatus("Background task running", true);
+                }
+                else
+                {
+                    ShowBackgroundTaskStatus("Background task not running", false);
+                }
+
+                isInitialized = true;
             }
             catch (Exception ex)
             {
@@ -169,7 +188,7 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                UpdateStatus("", false);
+                UpdateStatus("");
             }
         }
 
@@ -186,21 +205,21 @@ namespace LunchScheduler.ViewModels
                     // If we are allowed to register a background task
                     case BackgroundAccessStatus.AlwaysAllowed:
                     case BackgroundAccessStatus.AllowedSubjectToSystemPolicy:
-                        BackgroundTaskHelpers.RegisterAsync(MonitorLunchesTaskFriendlyName, typeof(MonitorLunchAppointmentsTask).FullName, (uint)frequency);
-                        UpdateStatus("Background Task Running");
+                        BackgroundTaskHelpers.RegisterAsync(Constants.MonitorLunchesTaskFriendlyName, typeof(MonitorLunchAppointmentsTask).FullName, (uint)frequency);
+                        ShowBackgroundTaskStatus("Background task running", true);
                         break;
 
                     // If we were denied access, show the the reason to the user
                     case BackgroundAccessStatus.DeniedBySystemPolicy:
-                        UpdateStatus($"Background Task Disabled by System Policy", false);
+                        ShowBackgroundTaskStatus($"Background Task Disabled by System Policy", false);
                         await new MessageDialog("The app has denied from adding a background task due to System Policy. This is usually because there are too many background tasks already. " + "r\n\nGo to Phone Settings > Background Apps and free up a couple slots.").ShowAsync();
                         break;
                     case BackgroundAccessStatus.Unspecified:
-                        UpdateStatus($"Background Task Disabled", false);
+                        ShowBackgroundTaskStatus($"Background Task Disabled", false);
                         await new MessageDialog("You did not make a choice. If you want to get reminders for upcoming lunches, please try again.").ShowAsync();
                         break;
                     case BackgroundAccessStatus.DeniedByUser:
-                        UpdateStatus($"Background Task Disabled", false);
+                        ShowBackgroundTaskStatus($"Background Task Disabled", false);
                         await new MessageDialog("You've blocked background tasks for this app or you have too many background tasks already. " + "r\n\nGo to Phone Settings > Background Apps \r\n\nFind this app in the list and re-enable background tasks.").ShowAsync();
                         break;
                 }
@@ -211,7 +230,7 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                UpdateStatus("", false);
+                UpdateStatus("");
             }
         }
 
@@ -219,11 +238,10 @@ namespace LunchScheduler.ViewModels
         {
             try
             {
-                IsBusy = true;
-                IsBusyMessage = "unregistering background task...";
+                UpdateStatus("unregistering background task...");
 
-                if (await BackgroundTaskHelpers.UnregisterTaskAsync(MonitorLunchesTaskFriendlyName))
-                    UpdateStatus("Reminders Background Task Disabled", false);
+                if (await BackgroundTaskHelpers.UnregisterTaskAsync(Constants.MonitorLunchesTaskFriendlyName))
+                    ShowBackgroundTaskStatus("Reminders Background Task Disabled", false);
             }
             catch (Exception ex)
             {
@@ -231,20 +249,34 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                IsBusy = false;
-                IsBusyMessage = "";
+                UpdateStatus("");
             }
         }
-        
+
         /// <summary>
-        /// Shows busy indicator
+        /// Shows busy indicator. Passing an empty string will hide the busy overlay
         /// </summary>
-        /// <param name="message">busy message to show</param>
-        /// <param name="showBusyIndicator">toggles the busy indicator's visibility</param>
-        private void UpdateStatus(string message, bool showBusyIndicator = true)
+        /// <param name="message">busy message to show, leave empty to hide the overlay</param>
+        private void UpdateStatus(string message)
         {
-            IsBusy = showBusyIndicator;
-            IsBusyMessage = message;
+            if (string.IsNullOrEmpty(message))
+            {
+                IsBusy = false;
+                IsBusyMessage = message;
+            }
+            else
+            {
+                IsBusy = true;
+                IsBusyMessage = message;
+            }
+        }
+
+        private void ShowBackgroundTaskStatus(string status, bool isBackgroundTaskRunning)
+        {
+            CurrentStatus = status;
+            CurrentStatusBrush = isBackgroundTaskRunning 
+                ? new SolidColorBrush(Colors.Green) 
+                : new SolidColorBrush(Colors.Red);
         }
 
         #endregion
@@ -254,7 +286,7 @@ namespace LunchScheduler.ViewModels
         public void GetStatusButton_OnClick(object sender, RoutedEventArgs e)
         {
             object obj;
-            if (localSettings != null && localSettings.Values.TryGetValue("BgTaskStatus", out obj))
+            if (localSettings != null && localSettings.Values.TryGetValue(Constants.BackgroundTaskStatusSettingsKey, out obj))
             {
                 LastTaskStatusMessage = obj.ToString();
             }

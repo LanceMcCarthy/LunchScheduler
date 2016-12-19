@@ -22,18 +22,11 @@
 //  THE SOFTWARE.
 //  ---------------------------------------------------------------------------------
 
-using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Storage;
 using Windows.UI.Xaml;
-using LunchScheduler.Data.Common;
-using LunchScheduler.ViewModels;
 using LunchScheduler.Views;
-using Microsoft.Toolkit.Uwp;
-using Newtonsoft.Json;
 using Template10.Common;
 using Template10.Controls;
 
@@ -44,19 +37,10 @@ namespace LunchScheduler
     {
         // Expose a reference to the content frame so that we can interact with the hamburger menu from anywhere
         public static Shell Shell { get; private set; }
-
-        // This ViewModel is for the user's chosen social login/profile
-        //private static ProfileViewModel profileViewModel;
-        //public static ProfileViewModel ProfileViewModel
-        //{
-        //    get { return profileViewModel ?? (profileViewModel = new ProfileViewModel()); }
-        //    private set { profileViewModel = value; }
-        //}
         
         public App()
         {
             InitializeComponent();
-            //Suspending += OnSuspending;
         }
         
         public override UIElement CreateRootElement(IActivatedEventArgs e)
@@ -71,26 +55,10 @@ namespace LunchScheduler
                 Content = Shell
             };
         }
-        
-        public override async Task OnStartAsync(StartKind startKind, IActivatedEventArgs args)
+
+        public override Task OnStartAsync(StartKind startKind, IActivatedEventArgs args)
         {
-            Debug.WriteLine("RESTORE STATUS from " + args.PreviousExecutionState);
-
-            switch (args.PreviousExecutionState)
-            {
-                case ApplicationExecutionState.Terminated:
-                    //ProfileViewModel = await GetCachedViewModelAsync();
-                    break;
-                case ApplicationExecutionState.Running:
-                    break;
-                case ApplicationExecutionState.NotRunning:
-                    break;
-                case ApplicationExecutionState.ClosedByUser:
-                    break;
-                case ApplicationExecutionState.Suspended:
-                    break;
-            }
-
+            // If the app was launched from a reminder, it will have the appointment ID in the args
             if (args.Kind == ActivationKind.ToastNotification)
             {
                 var toastArgs = args as ToastNotificationActivatedEventArgs;
@@ -100,64 +68,15 @@ namespace LunchScheduler
                 {
                     Debug.WriteLine($"OnActivated ToastNotification argument: {argument}");
 
-                    NavigationService.Navigate(typeof(OverviewPage), argument);
+                    NavigationService.Navigate(typeof(LunchesPage), argument);
                 }
             }
             else
             {
-                NavigationService.Navigate(typeof(OverviewPage));
+                NavigationService.Navigate(typeof(LunchesPage));
             }
+
+            return Task.CompletedTask;
         }
-        
-        //private async void OnSuspending(object sender, SuspendingEventArgs e)
-        //{
-        //    var deferral = e.SuspendingOperation.GetDeferral();
-
-        //    //await CacheViewModelAsync();
-
-        //    deferral.Complete();
-        //}
-
-        //private static async Task CacheViewModelAsync()
-        //{
-        //    try
-        //    {
-        //        var json = JsonConvert.SerializeObject(ProfileViewModel);
-
-        //        // Check to see if file is there
-        //        var file = ApplicationData.Current.TemporaryFolder.TryGetItemAsync(Constants.ProfileViewModelFileName);
-        //        if (file == null)
-        //            await ApplicationData.Current.TemporaryFolder.CreateFileAsync(Constants.ProfileViewModelFileName, CreationCollisionOption.ReplaceExisting);
-
-        //        // Then save with UWP Community Toolkit helper
-        //        await StorageFileHelper.WriteTextToLocalFileAsync(json, Constants.ProfileViewModelFileName);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine($"CachedViewModelException: {ex}");
-        //    }
-        //}
-
-        //private static async Task<ProfileViewModel> GetCachedViewModelAsync()
-        //{
-        //    try
-        //    {
-        //        var json = await StorageFileHelper.ReadTextFromLocalFileAsync(Constants.ProfileViewModelFileName);
-                
-        //        var persistedViewModel = JsonConvert.DeserializeObject<ProfileViewModel>(json);
-
-        //        if (persistedViewModel == null)
-        //        {
-        //            return new ProfileViewModel();
-        //        }
-
-        //        return persistedViewModel;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine($"GetCachedViewModelAsync: {ex}");
-        //        return new ProfileViewModel();
-        //    }
-        //}
     }
 }

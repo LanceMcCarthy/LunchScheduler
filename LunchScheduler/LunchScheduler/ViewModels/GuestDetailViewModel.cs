@@ -146,19 +146,26 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                UpdateStatus("", false);
+                UpdateStatus("");
             }
         }
-        
+
         /// <summary>
-        /// Shows busy indicator
+        /// Shows busy indicator. Passing an empty string will hide the busy overlay
         /// </summary>
-        /// <param name="message">busy message to show</param>
-        /// <param name="showBusyIndicator">toggles the busy indicator's visibility</param>
-        private void UpdateStatus(string message, bool showBusyIndicator = true)
+        /// <param name="message">busy message to show, leave empty to hide the overlay</param>
+        private void UpdateStatus(string message)
         {
-            IsBusy = showBusyIndicator;
-            IsBusyMessage = message;
+            if (string.IsNullOrEmpty(message))
+            {
+                IsBusy = false;
+                IsBusyMessage = message;
+            }
+            else
+            {
+                IsBusy = true;
+                IsBusyMessage = message;
+            }
         }
 
         #endregion
@@ -200,7 +207,7 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                UpdateStatus("", false);
+                UpdateStatus("");
             }
         }
 

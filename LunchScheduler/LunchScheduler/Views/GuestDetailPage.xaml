@@ -14,11 +14,16 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
-        <Grid x:Name="GuestDetailsGrid">
+
+        <Grid x:Name="HeaderGrid"
+              Background="{ThemeResource AppBarSeparatorForegroundThemeBrush}"
+              Height="48" />
+
+        <Grid x:Name="GuestDetailsGrid" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -26,8 +31,7 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
 
-            <Grid x:Name="HeaderGrid"
-                  Background="{ThemeResource ListViewItemBackgroundSelected}">
+            <Grid Background="{ThemeResource ListViewItemBackgroundSelected}">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
@@ -57,42 +61,43 @@
             </Grid>
 
             <GridView ItemsSource="{Binding SelectedGuest.PhoneNumbers}"
-                      ItemTemplate="{StaticResource GuestPhoneNumberTemplate}"
-                      ItemContainerStyle="{StaticResource GridViewItemStyle}"
+                      ItemTemplate="{StaticResource GuestPhoneNumberDataTemplate}"
+                      ItemContainerStyle="{StaticResource WideGridViewItemStyle}"
                       Visibility="{Binding SelectedGuest.PhoneNumbers, Converter={StaticResource CollectionVisibilityConverter}}"
                       Header="Phone Numbers"
                       Margin="10,10,0,0"
-                      Grid.Row="1" />
+                      Grid.Row="1"
+                      Height="115" 
+                      ScrollViewer.VerticalScrollMode="Disabled"
+                      ScrollViewer.HorizontalScrollMode="Enabled"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
 
             <GridView ItemsSource="{Binding SelectedGuest.EmailAddresses}"
-                      ItemTemplate="{StaticResource GuestEmailTemplate}"
-                      ItemContainerStyle="{StaticResource GridViewItemStyle}"
+                      ItemTemplate="{StaticResource GuestEmailDataTemplate}"
+                      ItemContainerStyle="{StaticResource WideGridViewItemStyle}"
                       Visibility="{Binding SelectedGuest.EmailAddresses, Converter={StaticResource CollectionVisibilityConverter}}"
                       Header="Email Addresses"
                       Margin="10,0,0,0"
-                      Grid.Row="2" />
+                      Grid.Row="2"
+                      Height="115"
+                      ScrollViewer.VerticalScrollMode="Disabled"
+                      ScrollViewer.HorizontalScrollMode="Enabled"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto" />
 
             <GridView ItemsSource="{Binding InvitedAppointments}"
-                      ItemContainerStyle="{StaticResource GridViewItemStyle}"
+                      ItemTemplate="{StaticResource SmallAppointmentDataTemplate}"
+                      ItemContainerStyle="{StaticResource WideGridViewItemStyle}"
                       Visibility="{Binding InvitedAppointments, Converter={StaticResource CollectionVisibilityConverter}}"
                       Header="All Invited Lunches"
                       Margin="10,0,0,0"
-                      Grid.Row="3">
-                <GridView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}"
-                                    Padding="10"
-                                    Margin="0,10,0,10">
-                            <TextBlock Text="{Binding Title}"/>
-                            <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}" />
-                            <TextBlock Text="{Binding Location.Name}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </GridView.ItemTemplate>
-            </GridView>
+                      Grid.Row="3"
+                      ScrollViewer.VerticalScrollMode="Disabled"
+                      ScrollViewer.HorizontalScrollMode="Enabled"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      Height="110"/>
         </Grid>
 
-        <CommandBar Grid.Row="1">
+        <CommandBar Grid.Row="2">
             <AppBarButton Icon="Phone"
                           Label="call"
                           Visibility="{Binding CallButtonVisibility}"
@@ -105,5 +110,44 @@
                           Label="delete"
                           Click="{x:Bind ViewModel.DeleteContact_OnClick}" />
         </CommandBar>
+
+        <Grid x:Name="BusyOverlayGrid"
+              Visibility="{Binding IsBusy}"
+              Background="{ThemeResource ListViewItemBackgroundSelectedPressed}"
+              Grid.RowSpan="3">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <ProgressRing IsActive="{Binding IsBusy}"
+                              Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                              Width="100"
+                              Height="100" />
+                <TextBlock Text="{Binding IsBusyMessage}"
+                           Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="wideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="641" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="narrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>

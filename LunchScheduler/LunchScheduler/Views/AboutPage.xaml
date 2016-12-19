@@ -15,21 +15,25 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
+
+        <Grid x:Name="HeaderGrid"
+              Background="{ThemeResource AppBarSeparatorForegroundThemeBrush}"
+              Height="48" />
+
         <Grid Padding="10"
+              Grid.Row="1"
               Background="{ThemeResource ListViewItemBackgroundSelected}">
             <StackPanel>
                 <TextBlock x:Name="AppNameTextBlock" 
                            Text="{x:Bind ViewModel.AppName}"
-                           Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                            HorizontalAlignment="Center"
                            Style="{StaticResource TitleTextBlockStyle}" />
                 <TextBlock x:Name="AppVersionTextBlock"
                            Text="{x:Bind ViewModel.AppVersion}"
-                           Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                            HorizontalAlignment="Center"
                            Style="{StaticResource SubtitleTextBlockStyle}"
                            Margin="0,0,0,0" />
@@ -37,26 +41,26 @@
         </Grid>
 
         <StackPanel Margin="10"
-                    Grid.Row="1">
+                    Grid.Row="2">
             <TextBlock Text="Operating System Information"
-                       FontWeight="SemiBold" />
+                       FontWeight="Bold" />
             <TextBlock Text="{x:Bind ViewModel.OperatingSystem}" />
             <TextBlock Text="{x:Bind ViewModel.OperatingSystemVersion}"
                        Margin="0,0,0,20" />
 
             <TextBlock Text="Device Information"
-                       FontWeight="SemiBold" />
+                       FontWeight="Bold" />
             <TextBlock Text="{x:Bind ViewModel.DeviceFamily}" />
             <TextBlock Text="{x:Bind ViewModel.DeviceModel}" />
             <TextBlock Text="{x:Bind ViewModel.DeviceManufacturer}"
                        Margin="0,0,0,20" />
 
             <TextBlock Text="Available Memory"
-                       FontWeight="SemiBold" />
+                       FontWeight="Bold" />
             <TextBlock Text="{x:Bind ViewModel.AvailableMemory}" />
         </StackPanel>
         
-        <StackPanel Grid.Row="2">
+        <StackPanel Grid.Row="3">
             <Button x:Name="FeedbackButton"
                     Content="Leave feedback or request feature"
                     Margin="10"
@@ -76,6 +80,10 @@
                         <AdaptiveTrigger MinWindowWidth="641" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Collapsed" />
+                        <Setter Target="FeedbackButton.HorizontalAlignment"
+                                Value="Left" />
                         <Setter Target="ContactUsButton.HorizontalAlignment"
                                 Value="Left" />
                         <Setter Target="AppNameTextBlock.HorizontalAlignment"
@@ -89,6 +97,10 @@
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="HeaderGrid.Visibility"
+                                Value="Visible" />
+                        <Setter Target="FeedbackButton.HorizontalAlignment"
+                                Value="Stretch" />
                         <Setter Target="ContactUsButton.HorizontalAlignment"
                                 Value="Stretch" />
                         <Setter Target="AppNameTextBlock.HorizontalAlignment"

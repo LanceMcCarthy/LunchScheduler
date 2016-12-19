@@ -1,10 +1,35 @@
-﻿using System;
+﻿//  ---------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+// 
+//  The MIT License (MIT)
+// 
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+// 
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+// 
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
+//  ---------------------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Email;
+using Windows.Storage;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Navigation;
@@ -13,22 +38,31 @@ using LunchScheduler.Data.Models;
 using LunchScheduler.Helpers;
 using Microsoft.Toolkit.Uwp.Services.Facebook;
 using Microsoft.Toolkit.Uwp.Services.Twitter;
+using Template10.Common;
 using Template10.Mvvm;
 
 namespace LunchScheduler.ViewModels
 {
     public class LunchDetailViewModel : ViewModelBase
     {
+        private const string FacebookProfilePhotoUrlSettingsKey = "FacebookProfilePhotoUrl";
+        private const string TwitterProfilePhotoUrlSettingsKey = "TwitterProfilePhotoUrl";
+        private readonly ApplicationDataContainer localSettings;
         private LunchAppointment selectedAppointment;
         private bool isBusy;
         private string isBusyMessage;
+        private string facebookProfilePictureUrl;
+        private string twitterProfilePictureUrl;
 
         public LunchDetailViewModel()
         {
             if (DesignMode.DesignModeEnabled)
             {
                 SelectedAppointment = DesignTimeHelpers.GenerateSampleAppointment();
+                return;
             }
+
+            localSettings = ApplicationData.Current.LocalSettings;
         }
 
         #region Properties
@@ -37,6 +71,54 @@ namespace LunchScheduler.ViewModels
         {
             get { return selectedAppointment; }
             set { Set(ref selectedAppointment, value); }
+        }
+        
+        public string FacebookProfilePictureUrl
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(facebookProfilePictureUrl))
+                    return facebookProfilePictureUrl;
+
+                object obj;
+                if (localSettings != null && localSettings.Values.TryGetValue(FacebookProfilePhotoUrlSettingsKey, out obj))
+                {
+                    facebookProfilePictureUrl = obj.ToString();
+                }
+
+                return facebookProfilePictureUrl;
+            }
+            set
+            {
+                Set(ref facebookProfilePictureUrl, value);
+
+                if (localSettings != null)
+                    localSettings.Values[FacebookProfilePhotoUrlSettingsKey] = value;
+            }
+        }
+
+        public string TwitterProfilePictureUrl
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(twitterProfilePictureUrl))
+                    return twitterProfilePictureUrl;
+
+                object obj;
+                if (localSettings != null && localSettings.Values.TryGetValue(TwitterProfilePhotoUrlSettingsKey, out obj))
+                {
+                    twitterProfilePictureUrl = obj.ToString();
+                }
+
+                return twitterProfilePictureUrl;
+            }
+            set
+            {
+                Set(ref twitterProfilePictureUrl, value);
+
+                if (localSettings != null)
+                    localSettings.Values[TwitterProfilePhotoUrlSettingsKey] = value;
+            }
         }
 
         public bool IsBusy
@@ -55,7 +137,7 @@ namespace LunchScheduler.ViewModels
         
         #region Methods
 
-        public override Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
+        public override async Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
         {
             try
             {
@@ -68,8 +150,16 @@ namespace LunchScheduler.ViewModels
                     SelectedAppointment = appointment;
                 }
 
-                return base.OnNavigatedToAsync(parameter, mode, state);
+                // If we've stored profile picture Urls, the user has previously authenticated
+                if (!string.IsNullOrEmpty(FacebookProfilePictureUrl))
+                {
+                    await LogIntoFacebookAsync();
+                }
 
+                if (!string.IsNullOrEmpty(TwitterProfilePictureUrl))
+                {
+                    await LogIntoTwitterAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -77,10 +167,10 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                UpdateStatus("", false);
+                UpdateStatus("");
             }
 
-            return base.OnNavigatedToAsync(parameter, mode, state);
+            //return base.OnNavigatedToAsync(parameter, mode, state);
         }
 
         /// <summary>
@@ -118,16 +208,98 @@ namespace LunchScheduler.ViewModels
         }
 
         /// <summary>
-        /// Shows busy indicator
+        /// Shows busy indicator. Passing an empty string will hide the busy overlay
         /// </summary>
-        /// <param name="message">busy message to show</param>
-        /// <param name="showBusyIndicator">toggles the busy indicator's visibility</param>
-        private void UpdateStatus(string message, bool showBusyIndicator = true)
+        /// <param name="message">busy message to show, leave empty to hide the overlay</param>
+        private void UpdateStatus(string message)
         {
-            IsBusy = showBusyIndicator;
-            IsBusyMessage = message;
+            if (string.IsNullOrEmpty(message))
+            {
+                IsBusy = false;
+                IsBusyMessage = message;
+            }
+            else
+            {
+                IsBusy = true;
+                IsBusyMessage = message;
+            }
         }
 
+        private async Task<bool> LogIntoFacebookAsync()
+        {
+            try
+            {
+                UpdateStatus("logging into Facebook...");
+
+                FacebookService.Instance.Initialize(ServiceKeys.FacebookAppId);
+
+                if (await FacebookService.Instance.LoginAsync())
+                {
+                    var photo = await FacebookService.Instance.GetUserPictureInfoAsync();
+
+                    FacebookProfilePictureUrl = photo.Url;
+
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"LogIntoFacebookAsync Exception: {ex}");
+                return false;
+            }
+            finally
+            {
+                UpdateStatus("");
+            }
+        }
+        public async void LogOutOfFacebook(object sender, RoutedEventArgs args)
+        {
+            await FacebookService.Instance.LogoutAsync();
+            
+            FacebookProfilePictureUrl = "";
+        }
+
+        private async Task<bool> LogIntoTwitterAsync()
+        {
+            try
+            {
+                UpdateStatus("logging into Twitter...");
+
+                TwitterService.Instance.Initialize(
+                    ServiceKeys.TwitterConsumerKey,
+                    ServiceKeys.TwitterConsumerSecret,
+                    ServiceKeys.CallbackUri);
+
+                if (await TwitterService.Instance.LoginAsync())
+                {
+                    var user = await TwitterService.Instance.GetUserAsync();
+                    TwitterProfilePictureUrl = user.ProfileImageUrl;
+
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"LogIntoTwitterAsync Exception: {ex}");
+                return false;
+            }
+            finally
+            {
+                UpdateStatus("");
+            }
+        }
+
+        public void LogOutOfTwitter(object sender, RoutedEventArgs args)
+        {
+            TwitterService.Instance.Logout();
+
+            TwitterProfilePictureUrl = "";
+        }
+        
         #endregion
 
         #region Event handlers
@@ -154,9 +326,9 @@ namespace LunchScheduler.ViewModels
                 var appointments = await FileHelpers.LoadLunchAppointments();
 
                 // First let's clean up any guest photo files if they're not in any other appointments
-                foreach (var guest in SelectedAppointment.Guests)
+                foreach (var guest in selectedAppointment.Guests)
                 {
-                    var result = appointments.Where(a => a.Guests.Any(g => g == guest));
+                    var result = appointments.Where(a => a.Guests.Any(g => g.Id == guest.Id));
 
                     if (!result.Any())
                     {
@@ -166,10 +338,13 @@ namespace LunchScheduler.ViewModels
                 }
 
                 // Now we can remove the appointment
-                appointments.Remove(SelectedAppointment);
+                appointments.Remove(selectedAppointment);
 
                 // Save the updated list
                 await FileHelpers.SaveLunchAppointments(appointments);
+
+               if (BootStrapper.Current.NavigationService.CanGoBack)
+                    BootStrapper.Current.NavigationService.GoBack();
 
             }
             catch (Exception ex)
@@ -178,7 +353,7 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                UpdateStatus("", false);
+                UpdateStatus("");
             }
         }
 
@@ -217,19 +392,20 @@ namespace LunchScheduler.ViewModels
                     return;
 
                 var message = ConstructMessage();
-
-                // UWP Toolkit
-                FacebookService.Instance.Initialize(ServiceKeys.FacebookAppId);
-
-                if (!await FacebookService.Instance.LoginAsync())
+                
+                if (await LogIntoFacebookAsync())
+                {
+                    // Facebook share requires a URL or an image
+                    success = await FacebookService.Instance.PostToFeedAsync(
+                        "TEST", 
+                        message, 
+                        "Lunch Scheduler demo",
+                        "https://github.com/Microsoft/Windows-universal-samples/blob/master/SharedContent/media/splash-sdk.png");
+                }
+                else
                 {
                     await new MessageDialog("You were not signed into Facebook").ShowAsync();
-                    return;
                 }
-
-                // Facebook share requires a URL or an image
-                success = await FacebookService.Instance.PostToFeedAsync("TEST", message, "Lunch Scheduler demo", "https://github.com/Microsoft/Windows-universal-samples/blob/master/SharedContent/media/splash-sdk.png");
-
             }
             catch (Exception ex)
             {
@@ -252,20 +428,15 @@ namespace LunchScheduler.ViewModels
                     return;
 
                 var message = ConstructMessage();
-
-                // UWP Toolkit
-                TwitterService.Instance.Initialize(ServiceKeys.TwitterConsumerKey,
-                    ServiceKeys.TwitterConsumerSecret,
-                    ServiceKeys.CallbackUri);
-
-                if (!await TwitterService.Instance.LoginAsync())
+                
+                if (await LogIntoTwitterAsync())
+                {
+                    success = await TwitterService.Instance.TweetStatusAsync("TEST: " + message);
+                }
+                else
                 {
                     await new MessageDialog("You were not signed into Twitter").ShowAsync();
-                    return;
                 }
-
-                success = await TwitterService.Instance.TweetStatusAsync("TEST: " + message);
-
             }
             catch (Exception ex)
             {

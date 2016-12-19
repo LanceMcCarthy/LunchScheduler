@@ -29,25 +29,24 @@ namespace LunchScheduler.BackgroundTasks
                 // UWP Community Toolkit
                 var json = await StorageFileHelper.ReadTextFromLocalFileAsync(Constants.LunchAppointmentsFileName);
 
-                Debug.WriteLine($"Background Task - Appointments File Loaded");
+                Debug.WriteLine($"Appointments File Loaded");
 
                 var appointments = JsonConvert.DeserializeObject<ObservableCollection<LunchAppointment>>(json);
 
                 if (appointments == null || appointments.Count < 1)
                 {
-                    LogStatus($"Background Task - No Appointments found");
+                    LogStatus($"No Appointments found");
                     return;
                 }
                 else
                 {
-                    LogStatus($"Background Task - {appointments.Count} Appointments Found");
+                    LogStatus($"{appointments.Count} Appointments Found");
                 }
                 
-
                 // Get the user's setting for how far ahead to check if there's an appointment
                 int monitorTimeWindow = 30;
                 object obj;
-                if (localSettings != null && localSettings.Values.TryGetValue("SelectedMonitorTimeWindow", out obj))
+                if (localSettings != null && localSettings.Values.TryGetValue(Constants.SelectedMonitorTimeWindowSettingsKey, out obj))
                 {
                     monitorTimeWindow = (int)obj;
                 }
@@ -57,7 +56,7 @@ namespace LunchScheduler.BackgroundTasks
                     // If the lunch appointment is within user's SelectedMonitorTimeWindow, create a notification
                     if (DateTime.Now - lunch.LunchTime < TimeSpan.FromMinutes(monitorTimeWindow))
                     {
-                        Debug.WriteLine($"Background Task - Creating Toast for {lunch.Title}");
+                        Debug.WriteLine($"Creating Toast for {lunch.Title}");
 
                         var visual = GenerateToastVisual(lunch);
 
@@ -78,16 +77,20 @@ namespace LunchScheduler.BackgroundTasks
                         };
 
                         ToastNotificationManager.CreateToastNotifier().Show(toast);
+
+                        LogStatus($"Sent Toast for {lunch.Title}");
                     }
                 }
+
+                LogStatus($"Successful, last run {DateTime.Now:U}");
             }
             catch (FileNotFoundException)
             {
-                LogStatus($"Background Task - No Appointments File Saved");
+                LogStatus($"No Appointments File Saved. Add appointments before enabling reminders.");
             }
             catch (Exception ex)
             {
-                LogStatus($"Background Task - Error: {ex.Message}");
+                LogStatus($"Error: {ex.Message}");
             }
             finally
             {
@@ -157,10 +160,10 @@ namespace LunchScheduler.BackgroundTasks
         private void LogStatus(string message)
         {
             if(localSettings!=null)
-                localSettings.Values["BgTaskStatus"] = message;
+                localSettings.Values[Constants.BackgroundTaskStatusSettingsKey] = message;
 
 #if DEBUG
-            Debug.WriteLine($"Log - {message}");
+            Debug.WriteLine($"Background Task Log - {message}");
 #endif
         }
     }
