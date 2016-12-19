@@ -26,10 +26,12 @@
         <GridView x:Name="UpcomingLunchesGridView"
                   ItemsSource="{Binding LunchAppointments}"
                   ItemTemplate="{StaticResource LargeAppointmentDataTemplate}"
+                  ItemContainerStyle="{StaticResource WideGridViewItemStyle}"
                   SelectionChanged="{x:Bind ViewModel.UpcomingLunchesGridView_OnSelectionChanged}"
                   SelectionMode="Single"
                   Header="Scheduled Lunches"
-                  Grid.Row="1">
+                  Grid.Row="1"
+                  Margin="10,0">
             <GridView.HeaderTemplate>
                 <DataTemplate>
                     <Grid>

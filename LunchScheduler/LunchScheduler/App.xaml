@@ -41,7 +41,7 @@
                 <TextBlock Text="{Binding FullName}"
                            TextTrimming="CharacterEllipsis"
                            HorizontalAlignment="Center"
-                           Margin="2,0,2,10" />
+                           Margin="5,0,5,10" />
             </StackPanel>
         </DataTemplate>
 
@@ -73,7 +73,7 @@
                                TextTrimming="CharacterEllipsis"
                                TextWrapping="Wrap"
                                HorizontalAlignment="Center"
-                               Margin="2,0,2,10" />
+                               Margin="5,0,5,10" />
                 </StackPanel>
             </Grid>
         </DataTemplate>
@@ -97,8 +97,8 @@
         </DataTemplate>
 
         <DataTemplate x:Key="SmallAppointmentDataTemplate">
-            <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}"
-                        Padding="10"
+            <StackPanel Padding="10"
+                        Background="{ThemeResource AppBarBackgroundThemeBrush}"
                         Margin="0,10,0,10">
                 <TextBlock Text="{Binding Title}" />
                 <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}" />
@@ -109,25 +109,32 @@
         <DataTemplate x:Key="LargeAppointmentDataTemplate">
             <Grid Margin="20">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+
                 </Grid.RowDefinitions>
-                <StackPanel>
+                <StackPanel HorizontalAlignment="Left"
+                            Margin="0,0,0,10">
                     <TextBlock Text="{Binding Title}"
                                Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}"
                                Style="{StaticResource SubtitleTextBlockStyle}" />
                     <TextBlock Text="{Binding Location.Name}"
-                               Margin="0,10,0,0" />
-                    <TextBlock Text="{Binding Location.Address}" />
-                    <TextBlock Text="{Binding Location.PhoneNumber}" />
+                               Margin="0,10,0,0"
+                               Visibility="{Binding Location.Address, Converter={StaticResource NullToVisibilityConverter}}" />
+                    <TextBlock Text="{Binding Location.Address}"
+                               Visibility="{Binding Location.Address, Converter={StaticResource NullToVisibilityConverter}}"/>
+                    <TextBlock Text="{Binding Location.PhoneNumber}"
+                               Visibility="{Binding Location.Address, Converter={StaticResource NullToVisibilityConverter}}" />
                 </StackPanel>
                 <GridView ItemsSource="{Binding Guests}"
+                          Visibility="{Binding Guests, Converter={StaticResource CollectionVisibilityConverter}}"
                           SelectionMode="None"
                           Grid.Row="1"
                           Header="Guests"
-                          ItemTemplate="{StaticResource SmallGuestItemTemplate}">
+                          ItemTemplate="{StaticResource SmallGuestItemTemplate}"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Bottom">
                     <GridView.ItemContainerStyle>
                         <Style TargetType="GridViewItem">
                             <Setter Property="HorizontalAlignment"
@@ -144,6 +151,8 @@
             <Setter Property="HorizontalAlignment"
                     Value="Stretch" />
             <Setter Property="HorizontalContentAlignment"
+                    Value="Left" />
+            <Setter Property="VerticalContentAlignment"
                     Value="Stretch" />
         </Style>
 

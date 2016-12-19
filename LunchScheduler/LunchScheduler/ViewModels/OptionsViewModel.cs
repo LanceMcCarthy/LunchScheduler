@@ -97,19 +97,7 @@ namespace LunchScheduler.ViewModels
 
         public string LastTaskStatusMessage
         {
-            get
-            {
-                if (DesignMode.DesignModeEnabled)
-                    return lastTaskStatusMessage;
-
-                object obj;
-                if (localSettings != null && localSettings.Values.TryGetValue(Constants.BackgroundTaskStatusSettingsKey, out obj))
-                {
-                    lastTaskStatusMessage = obj.ToString();
-                }
-
-                return lastTaskStatusMessage;
-            }
+            get { return lastTaskStatusMessage; }
             set { Set(ref lastTaskStatusMessage, value); }
         }
 

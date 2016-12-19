@@ -86,6 +86,7 @@ namespace LunchScheduler.BackgroundTasks
                     if (timeUntilAppointment < TimeSpan.FromMinutes(monitorTimeWindow) && timeUntilAppointment > TimeSpan.Zero)
                     {
                         Debug.WriteLine($"Creating Toast for {lunch.Title}");
+
                         badgeCount++;
 
                         // create toast notification
@@ -145,8 +146,8 @@ namespace LunchScheduler.BackgroundTasks
                 }
 
                 // Limit the size of the string so that we stay under the 5kb payload limit
-                if (message.Length > 100)
-                    message = message.Substring(0, 99);
+                if (message.Length > 80)
+                    message = message.Substring(0, 79);
 
                 // Create and return a visual that has the guest's names and the first guest's photo
                 visual = new ToastVisual
@@ -172,7 +173,7 @@ namespace LunchScheduler.BackgroundTasks
                         Children =
                         {
                             new AdaptiveText { Text = "Lunch Time!" },
-                            new AdaptiveText { Text = $"You have lunch at {lunch.LunchTime:t} at {lunch.Location.Name}", HintWrap = true }
+                            new AdaptiveText { Text = $"You have lunch at {lunch.LunchTime:t}", HintWrap = true }
                         }
                     }
                 };
