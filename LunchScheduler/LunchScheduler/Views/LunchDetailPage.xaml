@@ -11,65 +11,80 @@
         <viewModels:LunchDetailViewModel x:Name="ViewModel" />
     </Page.DataContext>
 
-    <Grid DataContext="{Binding SelectedAppointment}"
-          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <StackPanel Background="{ThemeResource CalendarDatePickerBackgroundFocused}">
-            <StackPanel Padding="0,0,0,10">
-                <TextBlock Text="{Binding Title}"
-                           Style="{StaticResource HeaderTextBlockStyle}"
-                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                           FontWeight="Bold"
-                           HorizontalAlignment="Center" />
-                <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}"
-                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                           Style="{StaticResource SubheaderTextBlockStyle}"
-                           HorizontalAlignment="Center" />
-            </StackPanel>
-            <StackPanel Background="{ThemeResource AppBarBackground}"
-                        Padding="0,0,0,10">
-                <TextBlock Text="{Binding Location.Name}"
-                           Margin="0,0,0,0"
-                           HorizontalAlignment="Center"
-                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                           Style="{StaticResource TitleTextBlockStyle}" />
-                <TextBlock Text="{Binding Location.Address}"
-                           HorizontalAlignment="Center"
-                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                           Style="{StaticResource SubtitleTextBlockStyle}" />
-                <TextBlock Text="{Binding Location.PhoneNumber}"
-                           Style="{StaticResource SubtitleTextBlockStyle}"
-                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                           HorizontalAlignment="Center"
-                           Visibility="{Binding Location.PhoneNumber, Converter={StaticResource NullToVisibilityConverter}}" />
-            </StackPanel>
-        </StackPanel>
-        
-        <GridView ItemsSource="{Binding Guests}"
-                  SelectionMode="None"
-                  Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                  ItemTemplate="{StaticResource LargeGuestItemTemplate}"
-                  ItemContainerStyle="{StaticResource GridViewItemStyle}"
-                  Grid.Row="1"
-                  Margin="20"
-                  Header="Guests">
-        </GridView>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <CommandBar Grid.Row="2">
-            <AppBarButton Icon="Save"
-                          Label="save"
-                          Visibility="{Binding ElementName=EditAppointmentToggleButton, Path=IsChecked, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <AppBarToggleButton x:Name="EditAppointmentToggleButton"
-                                Icon="Edit"
-                                Label="edit"/>
-            <AppBarButton Icon="Mail"
-                          Label="email guests"
-                          Visibility="{Binding Guests, Converter={StaticResource CollectionVisibilityConverter}}"
-                          Click="{x:Bind ViewModel.EmailGuestsButton_OnClick}" />
-        </CommandBar>
+            <StackPanel Background="{ThemeResource ListViewItemBackgroundSelected}">
+                <StackPanel Padding="0,0,0,10">
+                    <TextBlock Text="{Binding SelectedAppointment.Title}"
+                               Style="{StaticResource HeaderTextBlockStyle}"
+                               Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding SelectedAppointment.LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}"
+                               Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                               Style="{StaticResource SubheaderTextBlockStyle}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Background="{ThemeResource AppBarBackground}"
+                            Padding="0,0,0,10">
+                    <TextBlock Text="{Binding SelectedAppointment.Location.Name}"
+                               Margin="0,0,0,0"
+                               HorizontalAlignment="Center"
+                               Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                               Style="{StaticResource TitleTextBlockStyle}" />
+                    <TextBlock Text="{Binding SelectedAppointment.Location.Address}"
+                               HorizontalAlignment="Center"
+                               Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                               Style="{StaticResource SubtitleTextBlockStyle}" />
+                    <TextBlock Text="{Binding SelectedAppointment.Location.PhoneNumber}"
+                               Style="{StaticResource SubtitleTextBlockStyle}"
+                               Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                               HorizontalAlignment="Center"
+                               Visibility="{Binding SelectedAppointment.Location.PhoneNumber, Converter={StaticResource NullToVisibilityConverter}}" />
+                </StackPanel>
+            </StackPanel>
+
+            <GridView ItemsSource="{Binding SelectedAppointment.Guests}"
+                      SelectionMode="None"
+                      Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                      ItemTemplate="{StaticResource LargeGuestItemTemplate}"
+                      ItemContainerStyle="{StaticResource GridViewItemStyle}"
+                      Grid.Row="1"
+                      Margin="20"
+                      Header="Guests">
+            </GridView>
+
+            <CommandBar Grid.Row="2">
+                <AppBarButton Label="share to facebook"
+                              Click="{x:Bind ViewModel.FacebookShareButton_OnClick}">
+                    <AppBarButton.Icon>
+                        <PathIcon HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Data="M1.02874755859375,0L18.7531261444092,0 19.4805450439453,0.334843397140503 19.7818737030029,1.14312171936035 19.7818737030029,18.8568725585938 19.4805450439453,19.6653900146484 18.7531261444092,20 13.6362447738647,20 13.6362447738647,11.7824983596802 16.0949878692627,11.7824983596802 16.0949878692627,9.11312580108643 13.6362447738647,9.11312580108643 13.6362447738647,8.21875095367432 13.9750728607178,7.38656234741211 14.7943677902222,7.04187393188477 16.0949878692627,7.04187393188477 16.0949878692627,4.37375068664551 13.2793607711792,4.37375068664551 12.073805809021,4.62070369720459 11.0894441604614,5.29421901702881 10.4258241653442,6.29328155517578 10.1824951171875,7.51687526702881 10.1824951171875,9.11312580108643 7.96375226974487,9.11312580108643 7.96375226974487,11.7824983596802 10.1824951171875,11.7824983596802 10.1824951171875,20 1.02874755859375,20 0.301327735185623,19.6653900146484 0,18.8568725585938 0,1.14312171936035 0.301327735185623,0.334843397140503 1.02874755859375,0z" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <AppBarButton Label="share to twitter"
+                              Click="{x:Bind ViewModel.TwitterShareButton_OnClick}">
+                    <AppBarButton.Icon>
+                        <PathIcon HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Data="M13.9156246185303,0.000179279217263684L13.9979686737061,0.16315022110939 13.4831237792969,0.544563710689545 14.6209564208984,0.303847759962082 14.9671878814697,0.440891683101654 14.5235738754272,0.777743518352509 13.2918739318848,1.13645124435425 14.6185922622681,1.34398114681244 15.8510932922363,1.93138289451599 16.8532028198242,2.91335964202881 17.4887504577637,4.30461454391479 17.5503120422363,4.55563926696777 17.8106269836426,4.62524461746216 19.9074974060059,4.54337978363037 19.388671875,5.09713411331177 18.1587505340576,5.46151447296143 17.8447647094727,5.52526903152466 18.1556282043457,5.60401487350464 20,5.71777105331421 19.0135936737061,6.31574535369873 17.6512489318848,6.52651739120483 16.1414833068848,9.18797397613525 13.7293767929077,10.9972190856934 10.2089357376099,12.1455364227295 6.42898511886597,12.2505207061768 2.86688566207886,11.2044734954834 0,8.89969539642334 1.70741212368011,9.75229263305664 3.62054634094238,10.0700979232788 5.57200145721436,9.74019718170166 7.39437580108643,8.64967632293701 6.49260902404785,8.48612976074219 6.04757881164551,8.08615589141846 6.10282230377197,7.5857515335083 6.70187473297119,7.12091398239136 5.31679582595825,6.88340759277344 4.45812702178955,6.22589588165283 4.35101509094238,6.00799989700317 4.55749988555908,5.82713985443115 5.62624931335449,5.53525400161743 4.22937631607056,4.91821765899658 3.51687431335449,3.98148560523987 3.47453236579895,3.77077984809875 3.6956262588501,3.69272756576538 4.61437702178955,3.58711624145508 3.53031277656555,2.77405381202698 3.02562713623047,1.83021199703217 3.04375171661377,1.38449609279633 3.55500221252441,1.54395294189453 6.96875,2.83818936347961 9.6568775177002,4.48774147033691 10.7186717987061,2.2498254776001 11.9768762588501,0.720195114612579 12.6895313262939,0.161433592438698 12.6025009155273,0.585190832614899 13.2218742370605,0.207682713866234 13.9156246185303,0.000179279217263684z" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <AppBarButton Icon="Mail"
+                              Label="email guests"
+                              Visibility="{Binding SelectedAppointment.Guests, Converter={StaticResource CollectionVisibilityConverter}}"
+                              Click="{x:Bind ViewModel.EmailGuestsButton_OnClick}" />
+            </CommandBar>
+        </Grid>
+
     </Grid>
 </Page>

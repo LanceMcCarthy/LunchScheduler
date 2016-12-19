@@ -90,30 +90,40 @@
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <None Include="project.json" />
-    <None Include="TemporaryControls\README.md" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Commands\DelegateCommand.cs" />
+    <Compile Include="Controls\MasterDetailsView.cs" />
+    <Compile Include="Controls\NavMenuListView.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\LunchToObjectConverter.cs" />
     <Compile Include="Helpers\BackgroundTaskHelpers.cs" />
-    <Compile Include="TemporaryControls\MasterDetailsView.cs" />
-    <Compile Include="TemporaryControls\MasterDetailsView.Events.cs" />
-    <Compile Include="TemporaryControls\MasterDetailsView.Properties.cs" />
-    <Compile Include="TemporaryControls\MasterDetailsViewViewState.cs" />
+    <Compile Include="Shell.xaml.cs">
+      <DependentUpon>Shell.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Helpers\DesignTimeHelpers.cs" />
     <Compile Include="Helpers\TaskHelpers.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\AboutViewModel.cs" />
+    <Compile Include="ViewModels\AddLunchViewModel.cs" />
+    <Compile Include="ViewModels\GuestDetailViewModel.cs" />
     <Compile Include="ViewModels\GuestsViewModel.cs" />
     <Compile Include="ViewModels\LunchDetailViewModel.cs" />
+    <Compile Include="ViewModels\LunchesViewModel.cs" />
     <Compile Include="ViewModels\OptionsViewModel.cs" />
     <Compile Include="ViewModels\OverviewViewModel.cs" />
     <Compile Include="ViewModels\ProfileViewModel.cs" />
-    <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\AboutPage.xaml.cs">
+      <DependentUpon>AboutPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AddLunchPage.xaml.cs">
+      <DependentUpon>AddLunchPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\GuestDetailPage.xaml.cs">
       <DependentUpon>GuestDetailPage.xaml</DependentUpon>
     </Compile>
@@ -122,6 +132,9 @@
     </Compile>
     <Compile Include="Views\LunchDetailPage.xaml.cs">
       <DependentUpon>LunchDetailPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LunchesPage.xaml.cs">
+      <DependentUpon>LunchesPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OldOverviewPage.xaml.cs">
       <DependentUpon>OldOverviewPage.xaml</DependentUpon>
@@ -134,9 +147,6 @@
     </Compile>
     <Compile Include="Views\ProfilePage.xaml.cs">
       <DependentUpon>ProfilePage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ShellPage.xaml.cs">
-      <DependentUpon>ShellPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -164,9 +174,22 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="TemporaryControls\MasterDetailsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="Controls\Styles\MasterDetailsView.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
+    <Page Include="Shell.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AboutPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AddLunchPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\GuestDetailPage.xaml">
       <SubType>Designer</SubType>
@@ -177,6 +200,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\LunchDetailPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\LunchesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -193,10 +220,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ProfilePage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ShellPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

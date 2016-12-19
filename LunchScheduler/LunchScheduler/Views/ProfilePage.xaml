@@ -22,7 +22,7 @@
         </Grid.RowDefinitions>
 
         <Grid x:Name="HeaderGrid"
-              Background="{ThemeResource ContentDialogBorderThemeBrush}">
+              Background="{ThemeResource ListViewItemBackgroundSelected}">
             <!--<Rectangle Fill="{ThemeResource ContentDialogBorderThemeBrush}"/>
             <controls:DropShadowPanel BlurRadius="4.0"
                                       ShadowOpacity="0.70"
@@ -38,8 +38,8 @@
                     </Ellipse.Fill>
                 </Ellipse>
             </controls:DropShadowPanel>-->
-            <Ellipse Width="200"
-                     Height="200"
+            <Ellipse Width="100"
+                     Height="100"
                      Margin="10"
                      Visibility="{Binding ProfilePictureUrl, Converter={StaticResource NullToVisibilityConverter}}">
                 <Ellipse.Fill>

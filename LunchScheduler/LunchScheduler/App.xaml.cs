@@ -4,23 +4,23 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
-using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Navigation;
 using LunchScheduler.Data.Common;
 using LunchScheduler.ViewModels;
 using LunchScheduler.Views;
 using Microsoft.Toolkit.Uwp;
 using Newtonsoft.Json;
+using Template10.Common;
+using Template10.Controls;
 
 namespace LunchScheduler
 {
-    sealed partial class App : Application
+    sealed partial class App : BootStrapper
     {
         // Expose a reference to the content frame so that we can navigate from any of the ViewModels
-        public static Frame ContentFrame { get; private set; }
+        public static Shell Shell { get; private set; }
 
         // This ViewModel is for the user's chosen social login/profile
         private static ProfileViewModel profileViewModel;
@@ -36,94 +36,47 @@ namespace LunchScheduler
             Suspending += OnSuspending;
         }
 
-        protected override async void OnLaunched(LaunchActivatedEventArgs e)
+        public override UIElement CreateRootElement(IActivatedEventArgs e)
         {
-            // Opt out of Prelaunch
-            if (e.PrelaunchActivated)
-                return;
+            var service = NavigationServiceFactory(BackButton.Attach, ExistingContent.Exclude);
 
-            var shell = Window.Current.Content as ShellPage;
+            Shell = new Shell(service);
 
-            if (shell == null)
+            return new ModalDialog
             {
-                // Create a Shell which navigates to the first page
-                shell = new ShellPage();
-
-                // hook-up shell root frame navigation events
-                shell.ContentFrame.NavigationFailed += Shell_OnNavigationFailed;
-                shell.ContentFrame.Navigated += Shell_OnNavigated;
-                ContentFrame = shell.ContentFrame;
-
-                await RestoreStatusAsync(e.PreviousExecutionState);
-
-                // set the Shell as content
-                Window.Current.Content = shell;
-
-                // Hook into back button press (this works for both hardware and software back button)
-                SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
-
-                UpdateBackButtonVisibility();
-            }
-
-            Window.Current.Activate();
+                DisableBackButtonWhenModal = true,
+                Content = Shell
+            };
         }
 
-        protected override async void OnActivated(IActivatedEventArgs e)
+        public override async Task OnStartAsync(StartKind startKind, IActivatedEventArgs args)
         {
-            try
+           await RestoreStatusAsync(args.PreviousExecutionState);
+
+            if (args.Kind == ActivationKind.ToastNotification)
             {
-                base.OnActivated(e);
-                
-                var shell = Window.Current.Content as ShellPage;
+                var toastArgs = args as ToastNotificationActivatedEventArgs;
+                var argument = toastArgs?.Argument;
 
-                if (shell == null)
+                if (argument != null && argument.Contains("id"))
                 {
-                    shell = new ShellPage();
-                    shell.ContentFrame.NavigationFailed += Shell_OnNavigationFailed;
-                    shell.ContentFrame.Navigated += Shell_OnNavigated;
-                    ContentFrame = shell.ContentFrame;
+                    Debug.WriteLine($"OnActivated ToastNotification argument: {argument}");
 
-                    await RestoreStatusAsync(e.PreviousExecutionState);
-
-                    // set the Shell as content
-                    Window.Current.Content = shell;
-
-                    // Hook into back button press (this works for both hardware and software back button)
-                    SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
-                    
-                    UpdateBackButtonVisibility();
+                    NavigationService.Navigate(typeof(OverviewPage), argument);
                 }
-                
-                #region Toast activation
-
-                if (e.Kind == ActivationKind.ToastNotification)
-                {
-                    var toastArgs = e as ToastNotificationActivatedEventArgs;
-                    var argument = toastArgs?.Argument;
-                    
-                    if (argument != null && argument.Contains("id"))
-                    {
-                        Debug.WriteLine($"OnActivated ToastNotification argument: {argument}");
-                        shell.ContentFrame.Navigate(typeof(LunchDetailPage), argument);
-                    }
-                }
-
-                #endregion
-                
-                Window.Current.Activate();
             }
-            catch (Exception ex)
+            else
             {
-                await new MessageDialog($"App.OnActivated Exception: {ex}").ShowAsync();
+                NavigationService.Navigate(typeof(OverviewPage));
             }
         }
-
+        
         private async Task RestoreStatusAsync(ApplicationExecutionState previousExecutionState)
         {
             try
             {
                 Debug.WriteLine("RESTORE STATUS from " + previousExecutionState);
-                
+
                 switch (previousExecutionState)
                 {
                     case ApplicationExecutionState.Terminated:
@@ -143,32 +96,6 @@ namespace LunchScheduler
             {
                 await new MessageDialog($"App.RestoreStatusAsync Exception: {ex}").ShowAsync();
             }
-        }
-
-        private void OnBackRequested(object sender, BackRequestedEventArgs e)
-        {
-            if (ContentFrame.CanGoBack)
-            {
-                e.Handled = true;
-                ContentFrame.GoBack();
-            }
-        }
-
-        private void Shell_OnNavigated(object sender, NavigationEventArgs e)
-        {
-            UpdateBackButtonVisibility();
-        }
-
-        private void UpdateBackButtonVisibility()
-        {
-            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = ContentFrame.CanGoBack 
-                ? AppViewBackButtonVisibility.Visible 
-                : AppViewBackButtonVisibility.Collapsed;
-        }
-        
-        private void Shell_OnNavigationFailed(object sender, NavigationFailedEventArgs e)
-        {
-            throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
         
         private async void OnSuspending(object sender, SuspendingEventArgs e)

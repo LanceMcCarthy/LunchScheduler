@@ -5,9 +5,19 @@
     xmlns:local="using:LunchScheduler.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:LunchScheduler.ViewModels"
     mc:Ignorable="d">
 
+    <Page.DataContext>
+        <viewModels:GuestDetailViewModel x:Name="ViewModel"/>
+    </Page.DataContext>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -17,7 +27,7 @@
             </Grid.RowDefinitions>
 
             <Grid x:Name="HeaderGrid"
-                  Background="{ThemeResource CalendarDatePickerBackgroundFocused}">
+                  Background="{ThemeResource ListViewItemBackgroundSelected}">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
@@ -32,35 +42,50 @@
                           Margin="30" />
 
                     <Ellipse Margin="10"
-                             Visibility="{Binding ThumbnailUri, Converter={StaticResource NullToVisibilityConverter}}">
+                             Visibility="{Binding SelectedGuest.ThumbnailUri, Converter={StaticResource NullToVisibilityConverter}}">
                         <Ellipse.Fill>
-                            <ImageBrush ImageSource="{Binding ThumbnailUri}" />
+                            <ImageBrush ImageSource="{Binding SelectedGuest.ThumbnailUri}" />
                         </Ellipse.Fill>
                     </Ellipse>
                 </Grid>
 
-                <TextBlock Text="{Binding FullName}"
+                <TextBlock Text="{Binding SelectedGuest.FullName}"
                            Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,10"
-                           Grid.Row="1" />
+                           Grid.Row="1"
+                           Style="{StaticResource TitleTextBlockStyle}" />
             </Grid>
 
-            <GridView ItemsSource="{Binding PhoneNumbers}"
+            <GridView ItemsSource="{Binding SelectedGuest.PhoneNumbers}"
                       ItemTemplate="{StaticResource GuestPhoneNumberTemplate}"
                       ItemContainerStyle="{StaticResource GridViewItemStyle}"
-                      Visibility="{Binding PhoneNumbers, Converter={StaticResource CollectionVisibilityConverter}}"
+                      Visibility="{Binding SelectedGuest.PhoneNumbers, Converter={StaticResource CollectionVisibilityConverter}}"
                       Header="Phone Numbers"
-                      Margin="20,0,0,0"
+                      Margin="10,10,0,0"
                       Grid.Row="1" />
 
-            <GridView ItemsSource="{Binding EmailAddresses}"
+            <GridView ItemsSource="{Binding SelectedGuest.EmailAddresses}"
                       ItemTemplate="{StaticResource GuestEmailTemplate}"
                       ItemContainerStyle="{StaticResource GridViewItemStyle}"
-                      Visibility="{Binding EmailAddresses, Converter={StaticResource CollectionVisibilityConverter}}"
+                      Visibility="{Binding SelectedGuest.EmailAddresses, Converter={StaticResource CollectionVisibilityConverter}}"
                       Header="Email Addresses"
-                      Margin="20,0,0,0"
+                      Margin="10,10,0,0"
                       Grid.Row="2" />
         </Grid>
+
+        <CommandBar Grid.Row="1">
+            <AppBarButton Icon="Phone"
+                          Label="call"
+                          Visibility="{Binding CallButtonVisibility}"
+                          Click="{x:Bind ViewModel.CallContact_OnClick}" />
+            <AppBarButton Icon="Mail"
+                          Label="email"
+                          Visibility="{Binding EmailButtonVisibility}"
+                          Click="{x:Bind ViewModel.EmailContact_OnClick}" />
+            <AppBarButton Icon="Delete"
+                          Label="delete"
+                          Click="{x:Bind ViewModel.DeleteContact_OnClick}" />
+        </CommandBar>
     </Grid>
 </Page>

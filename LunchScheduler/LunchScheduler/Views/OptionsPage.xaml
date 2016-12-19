@@ -66,5 +66,22 @@
                     Margin="10"/>
             
         </StackPanel>
+
+        <Grid x:Name="BusyOverlayGrid"
+              Visibility="{Binding IsBusy}"
+              Background="{ThemeResource ListViewItemBackgroundSelectedPressed}"
+              Grid.Row="0"
+              Grid.RowSpan="3">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <ProgressRing IsActive="{Binding IsBusy}"
+                              Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                              Width="100"
+                              Height="100" />
+                <TextBlock Text="{Binding IsBusyMessage}"
+                           Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

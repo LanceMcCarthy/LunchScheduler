@@ -33,12 +33,13 @@ using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
 using LunchScheduler.BackgroundTasks;
 using LunchScheduler.Helpers;
 
 namespace LunchScheduler.ViewModels
 {
-    public class OptionsViewModel : ViewModelBase
+    public class OptionsViewModel : Template10.Mvvm.ViewModelBase
     {
         private readonly ApplicationDataContainer localSettings;
         private const string MonitorLunchesTaskFriendlyName = "LunchMonitorTask";
@@ -48,6 +49,8 @@ namespace LunchScheduler.ViewModels
         private SolidColorBrush currentStatusBrush = new SolidColorBrush(Colors.Red);
         private List<int> monitorTimeWindows;
         private int selectedMonitorTimeWindow = 30;
+        private bool isBusy;
+        private string isBusyMessage;
 
         public OptionsViewModel()
         {
@@ -64,7 +67,7 @@ namespace LunchScheduler.ViewModels
             get { return isBackgroundTaskEnabled; }
             set
             {
-                SetProperty(ref isBackgroundTaskEnabled, value);
+                Set(ref isBackgroundTaskEnabled, value);
 
                 // Enable or disable the task accordingly
                 if (value)
@@ -77,13 +80,13 @@ namespace LunchScheduler.ViewModels
         public string CurrentStatus
         {
             get { return currentStatus; }
-            set { SetProperty(ref currentStatus, value); }
+            set { Set(ref currentStatus, value); }
         }
 
         public SolidColorBrush CurrentStatusBrush
         {
             get { return currentStatusBrush; }
-            set { SetProperty(ref currentStatusBrush, value); }
+            set { Set(ref currentStatusBrush, value); }
         }
 
         public string LastTaskStatusMessage
@@ -101,7 +104,7 @@ namespace LunchScheduler.ViewModels
 
                 return lastTaskStatusMessage;
             }
-            set { SetProperty(ref lastTaskStatusMessage, value); }
+            set { Set(ref lastTaskStatusMessage, value); }
         }
 
         public List<int> MonitorTimeWindows => monitorTimeWindows ?? (monitorTimeWindows = new List<int> { 15, 30, 60, 120 });
@@ -126,7 +129,7 @@ namespace LunchScheduler.ViewModels
             }
             set
             {
-                SetProperty(ref selectedMonitorTimeWindow, value);
+                Set(ref selectedMonitorTimeWindow, value);
 
                 if (localSettings != null)
                     localSettings.Values["SelectedMonitorTimeWindow"] = selectedMonitorTimeWindow;
@@ -135,26 +138,31 @@ namespace LunchScheduler.ViewModels
             }
         }
 
+        public bool IsBusy
+        {
+            get { return isBusy; }
+            set { Set(ref isBusy, value); }
+        }
+
+        public string IsBusyMessage
+        {
+            get { return isBusyMessage; }
+            set { Set(ref isBusyMessage, value); }
+        }
+
         #endregion
-        
+
         #region Methods and Event handlers
 
-        /// <summary>
-        /// Required for every view model
-        /// </summary>
-        /// <returns>Is the view model initialized</returns>
-        public override async Task<bool> Init()
+        public override async Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
         {
             try
             {
                 IsBackgroundTaskEnabled = await BackgroundTaskHelpers.CheckBackgroundTasksAsync(MonitorLunchesTaskFriendlyName);
-
-                return true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"OptionsViewModel Init Exception: {ex}");
-                return false;
             }
         }
 
@@ -162,8 +170,7 @@ namespace LunchScheduler.ViewModels
         {
             try
             {
-                IsBusy = true;
-                IsBusyMessage = "registering background task...";
+                UpdateStatus("registering background task...");
 
                 var accessStatus = await BackgroundExecutionManager.RequestAccessAsync();
 
@@ -197,8 +204,7 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                IsBusy = false;
-                IsBusyMessage = "";
+                UpdateStatus("", false);
             }
         }
 
@@ -222,13 +228,18 @@ namespace LunchScheduler.ViewModels
                 IsBusyMessage = "";
             }
         }
-
-        private void UpdateStatus(string status, bool isActive = true)
-        {
-            CurrentStatus = status;
-            CurrentStatusBrush = isActive ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
-        }
         
+        /// <summary>
+        /// Shows busy indicator
+        /// </summary>
+        /// <param name="message">busy message to show</param>
+        /// <param name="showBusyIndicator">toggles the busy indicator's visibility</param>
+        private void UpdateStatus(string message, bool showBusyIndicator = true)
+        {
+            IsBusy = showBusyIndicator;
+            IsBusyMessage = message;
+        }
+
         #endregion
 
         #region Event Handlers

@@ -1,0 +1,92 @@
+﻿<Page
+    x:Class="LunchScheduler.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:LunchScheduler.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:LunchScheduler.ViewModels"
+    mc:Ignorable="d">
+    
+    <Page.DataContext>
+        <viewModels:AboutViewModel x:Name="ViewModel"/>
+    </Page.DataContext>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <Grid Padding="10"
+              Background="{ThemeResource ListViewItemBackgroundSelected}">
+            <StackPanel>
+                <TextBlock x:Name="AppNameTextBlock" 
+                           Text="{x:Bind ViewModel.AppName}"
+                           Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                           HorizontalAlignment="Center"
+                           Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock x:Name="AppVersionTextBlock"
+                           Text="{x:Bind ViewModel.AppVersion}"
+                           Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                           HorizontalAlignment="Center"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Margin="0,0,0,0" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Margin="10"
+                    Grid.Row="1">
+            <TextBlock Text="Operating System Information"
+                       FontWeight="SemiBold" />
+            <TextBlock Text="{x:Bind ViewModel.OperatingSystem}" />
+            <TextBlock Text="{x:Bind ViewModel.OperatingSystemVersion}"
+                       Margin="0,0,0,20" />
+
+            <TextBlock Text="Device Information"
+                       FontWeight="SemiBold" />
+            <TextBlock Text="{x:Bind ViewModel.DeviceFamily}" />
+            <TextBlock Text="{x:Bind ViewModel.DeviceModel}" />
+            <TextBlock Text="{x:Bind ViewModel.DeviceManufacturer}"
+                       Margin="0,0,0,20" />
+
+            <TextBlock Text="Available Memory"
+                       FontWeight="SemiBold" />
+            <TextBlock Text="{x:Bind ViewModel.AvailableMemory}" />
+        </StackPanel>
+        
+        <Button x:Name="ContactUsButton" Content="Questions? Contact Us!" Margin="10" Grid.Row="2" HorizontalAlignment="Stretch"/>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="wideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="641" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContactUsButton.HorizontalAlignment"
+                                Value="Left" />
+                        <Setter Target="AppNameTextBlock.HorizontalAlignment"
+                                Value="Left" />
+                        <Setter Target="AppVersionTextBlock.HorizontalAlignment"
+                                Value="Left" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="narrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContactUsButton.HorizontalAlignment"
+                                Value="Stretch" />
+                        <Setter Target="AppNameTextBlock.HorizontalAlignment"
+                                Value="Center" />
+                        <Setter Target="AppVersionTextBlock.HorizontalAlignment"
+                                Value="Center" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</Page>

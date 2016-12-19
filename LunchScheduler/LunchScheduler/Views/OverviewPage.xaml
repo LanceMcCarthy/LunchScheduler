@@ -6,87 +6,134 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:viewModels="using:LunchScheduler.ViewModels"
+      xmlns:localControls="using:LunchScheduler.Controls"
+      xmlns:converters="using:LunchScheduler.Converters"
+      xmlns:template10Controls="using:Template10.Controls"
       xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
-      xmlns:temporaryControls="using:LunchScheduler.TemporaryControls"
       mc:Ignorable="d">
 
     <Page.DataContext>
         <viewModels:OverviewViewModel x:Name="ViewModel" />
     </Page.DataContext>
 
+    <Page.Resources>
+        <!--<converters:LunchToObjectConverter x:Key="LunchToObjectConverter"/>
+        
+        <DataTemplate x:Key="MasterItemTemplate">
+            <StackPanel Margin="5">
+                <TextBlock Text="{Binding Title}"
+                           FontWeight="Bold" />
+                <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Guests:"
+                               Margin="0,0,5,0" />
+                    <TextBlock Text="{Binding Guests.Count}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Name="DetailsItemTemplate">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel Background="{ThemeResource ListViewItemBackgroundSelected}">
+                    <StackPanel Padding="0,0,0,10">
+                        <TextBlock Text="{Binding Title}"
+                                   Style="{StaticResource HeaderTextBlockStyle}"
+                                   Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}"
+                                   Style="{StaticResource SubheaderTextBlockStyle}"
+                                   Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel Background="{ThemeResource AppBarBackground}"
+                                Padding="0,0,0,10">
+                        <TextBlock Text="{Binding Location.Name}"
+                                   Margin="0,0,0,0"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                   Style="{StaticResource TitleTextBlockStyle}" />
+                        <TextBlock Text="{Binding Location.Address}"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                   Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock Text="{Binding Location.PhoneNumber}"
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                   Visibility="{Binding Location.PhoneNumber, Converter={StaticResource NullToVisibilityConverter}}" />
+                    </StackPanel>
+                </StackPanel>
+                <GridView ItemsSource="{Binding Guests}"
+                          Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                          ItemTemplate="{StaticResource LargeGuestItemTemplate}"
+                          ItemContainerStyle="{StaticResource GridViewItemStyle}"
+                          SelectionMode="None"
+                          Grid.Row="1"
+                          Margin="20,0,20,0"
+                          Header="Guests">
+                </GridView>
+            </Grid>
+        </DataTemplate>-->
+    </Page.Resources>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
-        <controls:MasterDetailsView ItemsSource="{Binding LunchAppointments}"
-                                    SelectionChanged="{x:Bind ViewModel.MasterDetailsView_OnSelectionChanged}"
+
+        <!--<localControls:MasterDetailsView x:Name="LunchesMasterDetailsView"
+                                         Details="{Binding SelectedLunch}"
+                                         DetailsTemplate="{StaticResource DetailsItemTemplate}"
+                                         IsDetailsLoading="{Binding IsBusy}"
+                                         IsMasterLoading="{Binding IsBusy}"
+                                         ItemContainerStyle="{StaticResource WideListViewItemStyle}"
+                                         ItemTemplate="{StaticResource MasterItemTemplate}"
+                                         ItemsSource="{Binding LunchAppointments}"
+                                         SelectedItem="{Binding SelectedLunch,Converter={StaticResource LunchToObjectConverter}, Mode=TwoWay}"
+                                         Grid.Row="1">
+            <localControls:MasterDetailsView.MasterCommandBarContent>
+                <StackPanel Height="48"
+                            Orientation="Horizontal">
+                    <TextBlock Margin="12,0,0,0"
+                               VerticalAlignment="Center"
+                               FontSize="24"
+                               FontWeight="SemiBold"
+                               Style="{StaticResource TitleTextBlockStyle}"
+                               Text="Lunches" />
+                </StackPanel>
+            </localControls:MasterDetailsView.MasterCommandBarContent>
+            <localControls:MasterDetailsView.MasterCommands>
+                <AppBarButton Icon="Add"
+                              Label="add lunch"
+                              Click="{x:Bind ViewModel.AddAppointmentAppBarButton_OnClick}" />
+            </localControls:MasterDetailsView.MasterCommands>
+            <localControls:MasterDetailsView.DetailsCommands>
+
+                <AppBarButton Icon="Delete"
+                              Label="delete"
+                              Visibility="{Binding SelectedLunch, Converter={StaticResource NullToVisibilityConverter}}"
+                              Click="{x:Bind ViewModel.DeleteLunchButton_OnClick}" />
+                <AppBarButton Icon="Edit"
+                              Label="edit"
+                              Visibility="{Binding SelectedLunch, Converter={StaticResource NullToVisibilityConverter}}"
+                              Click="{x:Bind ViewModel.EditLunchButton_OnClick}" />
+            </localControls:MasterDetailsView.DetailsCommands>
+        </localControls:MasterDetailsView>-->
+
+        <!--<controls:MasterDetailsView ItemsSource="{Binding LunchAppointments}"
+                                    SelectedItem="{Binding SelectedLunch, Converter={StaticResource LunchToObjectConverter}, Mode=TwoWay}"
                                     NoSelectionContent="Add or select an appointment"
-                                    Grid.Row="0"
+                                    ItemTemplate="{StaticResource MasterItemTemplate}"
+                                    DetailsTemplate="{StaticResource DetailsItemTemplate}"
+                                    Grid.Row="1"
                                     Grid.Column="0">
-            <controls:MasterDetailsView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Margin="5">
-                        <TextBlock Text="{Binding Title}" FontWeight="Bold" />
-                        <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}" />
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Guests:" Margin="0,0,5,0"/>
-                            <TextBlock Text="{Binding Guests.Count}"/>
-                        </StackPanel>
-                    </StackPanel>
-                </DataTemplate>
-            </controls:MasterDetailsView.ItemTemplate>
-            <controls:MasterDetailsView.DetailsTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <StackPanel Background="{ThemeResource CalendarDatePickerBackgroundFocused}">
-                            <StackPanel Padding="0,0,0,10">
-                                <TextBlock Text="{Binding Title}"
-                                           Style="{StaticResource HeaderTextBlockStyle}"
-                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                           FontWeight="Bold"
-                                           HorizontalAlignment="Center" />
-                                <TextBlock Text="{Binding LunchTime, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0:g}'}"
-                                           Style="{StaticResource SubheaderTextBlockStyle}"
-                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                           HorizontalAlignment="Center" />
-                            </StackPanel>
-                            <StackPanel Background="{ThemeResource AppBarBackground}"
-                                        Padding="0,0,0,10">
-                                <TextBlock Text="{Binding Location.Name}"
-                                           Margin="0,0,0,0"
-                                           HorizontalAlignment="Center"
-                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                           Style="{StaticResource TitleTextBlockStyle}" />
-                                <TextBlock Text="{Binding Location.Address}"
-                                           HorizontalAlignment="Center"
-                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                           Style="{StaticResource SubtitleTextBlockStyle}" />
-                                <TextBlock Text="{Binding Location.PhoneNumber}"
-                                           Style="{StaticResource SubtitleTextBlockStyle}"
-                                           HorizontalAlignment="Center"
-                                           Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                           Visibility="{Binding Location.PhoneNumber, Converter={StaticResource NullToVisibilityConverter}}" />
-                            </StackPanel>
-                        </StackPanel>
-                        <GridView ItemsSource="{Binding Guests}"
-                                  Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                                  ItemTemplate="{StaticResource LargeGuestItemTemplate}"
-                                  ItemContainerStyle="{StaticResource GridViewItemStyle}"
-                                  SelectionMode="None"
-                                  Grid.Row="1"
-                                  Margin="20"
-                                  Header="Guests">
-                        </GridView>
-                    </Grid>
-                </DataTemplate>
-            </controls:MasterDetailsView.DetailsTemplate>
             <controls:MasterDetailsView.NoSelectionContentTemplate>
                 <DataTemplate>
                     <StackPanel HorizontalAlignment="Center"
@@ -106,28 +153,45 @@
                     </StackPanel>
                 </DataTemplate>
             </controls:MasterDetailsView.NoSelectionContentTemplate>
-        </controls:MasterDetailsView>
+        </controls:MasterDetailsView>-->
+
+        <GridView x:Name="UpcomingLunchesGridView"
+                  ItemsSource="{Binding LunchAppointments}"
+                  ItemTemplate="{StaticResource LunchAppointmentDataTemplate}"
+                  SelectionChanged="{x:Bind ViewModel.UpcomingLunchesGridView_OnSelectionChanged}"
+                  SelectionMode="Single"
+                  Header="Scheduled Lunches"
+                  Grid.Row="0">
+            <GridView.HeaderTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <TextBlock Text="{Binding}"
+                                   Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                   Style="{StaticResource TitleTextBlockStyle}"
+                                   HorizontalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </GridView.HeaderTemplate>
+        </GridView>
         
-        <CommandBar Grid.Row="1"
-                    Grid.ColumnSpan="2">
+        <CommandBar Grid.Row="1">
             <AppBarButton Icon="Add"
                           Label="add lunch"
                           Click="{x:Bind ViewModel.AddAppointmentAppBarButton_OnClick}" />
-            <AppBarButton Icon="Delete"
+            <!--<AppBarButton Icon="Delete"
                           Label="delete"
                           Visibility="{Binding SelectedLunch, Converter={StaticResource NullToVisibilityConverter}}"
                           Click="{x:Bind ViewModel.DeleteLunchButton_OnClick}"/>
             <AppBarButton Icon="Edit"
                           Label="edit"
                           Visibility="{Binding SelectedLunch, Converter={StaticResource NullToVisibilityConverter}}"
-                          Click="{x:Bind ViewModel.EditLunchButton_OnClick}"/>
+                          Click="{x:Bind ViewModel.EditLunchButton_OnClick}"/>-->
         </CommandBar>
-        
-        <!-- -->
 
-        <Grid x:Name="AddNewLunchAppointmentOverlay"
+        <!--<Grid x:Name="AddNewLunchAppointmentOverlay"
               Visibility="{Binding AddAppointmentOverlayVisibility}"
               Background="#DDFFFFFF"
+              Grid.Row="1"
               Grid.RowSpan="2">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
@@ -256,8 +320,26 @@
                             Margin="5,0,0,0" />
                 </Grid>
             </Grid>
+        </Grid>-->
+        
+        <Grid x:Name="BusyOverlayGrid"
+              Visibility="{Binding IsBusy}"
+              Background="{ThemeResource ListViewItemBackgroundSelectedPressed}"
+              Grid.Row="0" Grid.RowSpan="2">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <ProgressRing IsActive="{Binding IsBusy}"
+                              Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                              Width="100"
+                              Height="100" />
+                <TextBlock Text="{Binding IsBusyMessage}"
+                           Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
         </Grid>
 
     </Grid>
 </Page>
+
+
 

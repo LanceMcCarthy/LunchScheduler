@@ -23,37 +23,30 @@
 //  ---------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
-using Windows.ApplicationModel.Calls;
-using Windows.ApplicationModel.Contacts;
-using Windows.ApplicationModel.Email;
-using Windows.Foundation.Metadata;
-using Windows.Storage;
-using Windows.Storage.Streams;
-using Windows.UI.Core;
-using Windows.UI.Popups;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using LunchScheduler.Commands;
+using Windows.UI.Xaml.Navigation;
 using LunchScheduler.Data.Common;
 using LunchScheduler.Data.Models;
 using LunchScheduler.Helpers;
+using LunchScheduler.Views;
 using Microsoft.Toolkit.Uwp;
 using Newtonsoft.Json;
+using Template10.Common;
 
 namespace LunchScheduler.ViewModels
 {
-    public class GuestsViewModel : ViewModelBase
+    public class GuestsViewModel : Template10.Mvvm.ViewModelBase
     {
         private ObservableCollection<LunchGuest> currentGuests;
-        private LunchGuest selectedGuest;
+        private bool isBusy;
+        private string isBusyMessage;
 
         public GuestsViewModel()
         {
@@ -65,30 +58,29 @@ namespace LunchScheduler.ViewModels
         }
 
         #region Properties
+
         public ObservableCollection<LunchGuest> CurrentGuests
         {
             get { return currentGuests ?? (currentGuests = new ObservableCollection<LunchGuest>()); }
-            set { SetProperty(ref currentGuests, value); }
+            set { Set(ref currentGuests, value); }
         }
-
-        public LunchGuest SelectedGuest
+        
+        public bool IsBusy
         {
-            get
-            {
-                if (selectedGuest != null)
-                    return selectedGuest;
-
-                selectedGuest = CurrentGuests.FirstOrDefault();
-                return selectedGuest;
-            }
-            set { SetProperty(ref selectedGuest, value); }
+            get { return isBusy; }
+            set { Set(ref isBusy, value); }
         }
-        
+
+        public string IsBusyMessage
+        {
+            get { return isBusyMessage; }
+            set { Set(ref isBusyMessage, value); }
+        }
         #endregion
-        
+
         #region Methods
 
-        public override async Task<bool> Init()
+        public override async Task OnNavigatedToAsync(object parameter, NavigationMode mode, IDictionary<string, object> state)
         {
             try
             {
@@ -101,13 +93,10 @@ namespace LunchScheduler.ViewModels
                     if (CurrentGuests.All(g => g.Id != lunchGuest.Id))
                         CurrentGuests.Add(lunchGuest);
                 }
-
-                return true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"GuestsViewModel Init Exception: {ex}");
-                return false;
             }
         }
 
@@ -115,7 +104,7 @@ namespace LunchScheduler.ViewModels
         {
             try
             {
-                await UpdateBusyStatusAsync("loading lunch appointments...");
+                UpdateStatus("loading lunch appointments...");
 
                 // UWP Community Toolkit
                 var json = await StorageFileHelper.ReadTextFromLocalFileAsync(Constants.LunchAppointmentsFileName);
@@ -138,61 +127,34 @@ namespace LunchScheduler.ViewModels
             }
             finally
             {
-                await UpdateBusyStatusAsync("", false);
+               UpdateStatus("", false);
             }
+        }
+
+        /// <summary>
+        /// Shows busy indicator
+        /// </summary>
+        /// <param name="message">busy message to show</param>
+        /// <param name="showBusyIndicator">toggles the busy indicator's visibility</param>
+        private void UpdateStatus(string message, bool showBusyIndicator = true)
+        {
+            IsBusy = showBusyIndicator;
+            IsBusyMessage = message;
         }
 
         #endregion
 
-        #region x:Bind-able event handlers
+        #region Event handlers
 
-        public void MasterDetailsView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        public void GuestsGridViewView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.AddedItems == null)
-                return;
-
-            if (e.AddedItems.Count > 0)
+            if (e.AddedItems?.Count > 0)
             {
-                SelectedGuest = e.AddedItems.FirstOrDefault() as LunchGuest;
-            }
-            else
-            {
-                SelectedGuest = null;
+                var guest = e.AddedItems.FirstOrDefault() as LunchGuest;
+                if(guest != null)
+                    BootStrapper.Current.NavigationService.Navigate(typeof(GuestDetailPage), guest);
             }
         }
-        public async void CallSelectedContact_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (SelectedGuest == null || SelectedGuest.PhoneNumbers.Count == 0)
-                return;
-
-            if (ApiInformation.IsApiContractPresent("Windows.ApplicationModel.Calls.CallsPhoneContract", 1, 0))
-            {
-                PhoneCallManager.ShowPhoneCallUI(SelectedGuest.PhoneNumbers[0].Number, SelectedGuest.FullName);
-            }
-            else
-            {
-                await new MessageDialog("Unfortunately, your device cannot make phone calls.", "No Phone Line").ShowAsync();
-            }
-        }
-
-        public async void EmailSelectedContact_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (SelectedGuest == null || SelectedGuest.EmailAddresses.Count == 0)
-                return;
-
-            var emailMessage = new EmailMessage();
-
-            var email = SelectedGuest.EmailAddresses.FirstOrDefault();
-
-            if (email != null)
-            {
-                var emailRecipient = new EmailRecipient(email.Address);
-                emailMessage.To.Add(emailRecipient);
-            }
-
-            await EmailManager.ShowComposeNewEmailAsync(emailMessage);
-        }
-        
 
         #endregion
     }

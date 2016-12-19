@@ -120,12 +120,7 @@ namespace LunchScheduler.BackgroundTasks
                     // Add the guest's name
                     message += $"{lunch.Guests[i].FullName}";
                 }
-
-                foreach (var lunchGuest in lunch.Guests)
-                {
-                    message += $" {lunchGuest.FullName}";
-                }
-
+                
                 // Create and return a visual that has the guest's names and the first guest's photo
                 return new ToastVisual
                 {

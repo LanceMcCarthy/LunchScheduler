@@ -110,5 +110,41 @@ namespace LunchScheduler.Helpers
 
             return contacts;
         }
+
+        public static LunchGuest GenerateSampleGuest()
+        {
+            return new LunchGuest
+            {
+                Id = $"123456771",
+                FullName = $"John Peter Doe",
+                ThumbnailUri = "ms-appx:///Assets/PlaceholderImages/Friend_Thumb.jpg",
+                PhoneNumbers = new List<LunchGuestPhoneNumber>()
+                    {
+                        new LunchGuestPhoneNumber
+                        {
+                            Description = "Mobile",
+                            Number = "555-212-1212"
+                        },
+                        new LunchGuestPhoneNumber
+                        {
+                            Description = "Work",
+                            Number = "555-212-1212"
+                        }
+                    },
+                EmailAddresses = new List<LunchGuestEmailAddress>
+                    {
+                        new LunchGuestEmailAddress
+                        {
+                            Description = "Personal",
+                            Address = "john.doe@outlook.com"
+                        },
+                        new LunchGuestEmailAddress
+                        {
+                            Description = "Work",
+                            Address = "john.doe@microsoft.com"
+                        }
+                    }
+            };
+        }
     }
 }
