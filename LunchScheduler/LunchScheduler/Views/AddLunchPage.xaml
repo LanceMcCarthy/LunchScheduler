@@ -39,9 +39,19 @@
                              PlaceholderText="enter title for appointment"
                              Margin="0,10,0,0" />
 
-                    <TextBlock Text="Restaurant Details"
-                               Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
-                               Margin="0,10,0,5" />
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,0,0,5">
+                        <TextBlock Text="Restaurant Details"
+                                   Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
+                                   VerticalAlignment="Bottom" />
+                        <HyperlinkButton Content="search"
+                                         VerticalAlignment="Bottom"
+                                         Padding="0,6,0,0"
+                                         Margin="10,0,0,0"
+                                         Click="{x:Bind ViewModel.SearchButton_OnClick}"/>
+                    </StackPanel>
+
+                    
 
                     <TextBox Text="{Binding LunchToAdd.Location.Name, Mode=TwoWay}"
                              PlaceholderText="name"

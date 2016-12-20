@@ -26,23 +26,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Contacts;
-using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using LunchScheduler.Data.Common;
 using LunchScheduler.Data.Models;
+using LunchScheduler.Dialogs;
 using LunchScheduler.Helpers;
-using Microsoft.Toolkit.Uwp;
-using Newtonsoft.Json;
 using Template10.Common;
 using Template10.Mvvm;
 
@@ -93,7 +87,7 @@ namespace LunchScheduler.ViewModels
 
                 var appts = parameter as ObservableCollection<LunchAppointment>;
 
-                allAppointments = appts ?? new ObservableCollection<LunchAppointment>(); 
+                allAppointments = appts ?? new ObservableCollection<LunchAppointment>();
 
                 return base.OnNavigatedToAsync(parameter, mode, state);
 
@@ -132,7 +126,7 @@ namespace LunchScheduler.ViewModels
                 {
                     allAppointments = new ObservableCollection<LunchAppointment>(allAppointments.OrderByDescending(a => a.LunchTime).ToList());
                 }
-                
+
                 UpdateStatus("saving appointments...");
 
                 // Save updated appointments list to storage
@@ -317,6 +311,18 @@ namespace LunchScheduler.ViewModels
 
             LunchToAdd.LunchTime = new DateTimeOffset(LunchToAdd.LunchTime.Year, LunchToAdd.LunchTime.Month,
                 LunchToAdd.LunchTime.Day, e.NewTime.Hours, e.NewTime.Minutes, 0, LunchToAdd.LunchTime.Offset);
+        }
+
+        public async void SearchButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var searchDialog = new RestaurantSearchDialog();
+            await searchDialog.ShowAsync();
+
+            if (searchDialog?.SelectedResult != null)
+            {
+                LunchToAdd.Location.Name = searchDialog?.SelectedResult.Title;
+                LunchToAdd.Location.Address = searchDialog.SelectedResult.Link;
+            }
         }
 
         #endregion
