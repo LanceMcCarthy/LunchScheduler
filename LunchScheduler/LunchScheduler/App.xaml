@@ -11,8 +11,9 @@
     <common:BootStrapper.Resources>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <converters:BooleanToVisibilityConverter x:Name="BoolToVisibilityConverter" />
-        <converters:BooleanToVisibilityConverter x:Name="InvertedBoolToVisibilityConverter" IsInverted="True"/>
-        
+        <converters:BooleanToVisibilityConverter x:Name="InvertedBoolToVisibilityConverter"
+                                                 IsInverted="True" />
+
         <toolkitConverters:StringFormatConverter x:Key="StringFormatConverter" />
         <toolkitConverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
 
@@ -82,16 +83,18 @@
             <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}"
                         Padding="10"
                         Margin="0,10,0,10">
-                <TextBlock Text="{Binding Description}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Description}"
+                           FontWeight="SemiBold" />
                 <TextBlock Text="{Binding Number}" />
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="GuestEmailDataTemplate">
-            <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}" 
+            <StackPanel Background="{ThemeResource AppBarBackgroundThemeBrush}"
                         Padding="10"
                         Margin="0,10,0,10">
-                <TextBlock Text="{Binding Description}" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding Description}"
+                           FontWeight="SemiBold" />
                 <TextBlock Text="{Binding Address}" />
             </StackPanel>
         </DataTemplate>
@@ -123,7 +126,7 @@
                                Margin="0,10,0,0"
                                Visibility="{Binding Location.Address, Converter={StaticResource NullToVisibilityConverter}}" />
                     <TextBlock Text="{Binding Location.Address}"
-                               Visibility="{Binding Location.Address, Converter={StaticResource NullToVisibilityConverter}}"/>
+                               Visibility="{Binding Location.Address, Converter={StaticResource NullToVisibilityConverter}}" />
                     <TextBlock Text="{Binding Location.PhoneNumber}"
                                Visibility="{Binding Location.Address, Converter={StaticResource NullToVisibilityConverter}}" />
                 </StackPanel>
@@ -147,7 +150,8 @@
             </Grid>
         </DataTemplate>
 
-        <Style x:Key="WideGridViewItemStyle" TargetType="GridViewItem">
+        <Style x:Key="WideGridViewItemStyle"
+               TargetType="GridViewItem">
             <Setter Property="HorizontalAlignment"
                     Value="Stretch" />
             <Setter Property="HorizontalContentAlignment"
@@ -164,5 +168,4 @@
                     Value="Stretch" />
         </Style>
     </common:BootStrapper.Resources>
-
 </common:BootStrapper>
