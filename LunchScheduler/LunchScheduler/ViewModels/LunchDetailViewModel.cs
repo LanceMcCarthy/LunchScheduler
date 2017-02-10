@@ -404,7 +404,7 @@ namespace LunchScheduler.ViewModels
                 }
                 else
                 {
-                    await new MessageDialog("You were not signed into Facebook").ShowAsync();
+                    await new MessageDialog("Make sure you've added your API keys to ServiceKeys.cs!","You were not signed into Facebook").ShowAsync();
                 }
             }
             catch (Exception ex)
@@ -435,7 +435,7 @@ namespace LunchScheduler.ViewModels
                 }
                 else
                 {
-                    await new MessageDialog("You were not signed into Twitter").ShowAsync();
+                    await new MessageDialog("Make sure you've added your API keys to ServiceKeys.cs!", "You were not signed into Twitter").ShowAsync();
                 }
             }
             catch (Exception ex)
