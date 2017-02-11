@@ -44,7 +44,7 @@
                         <TextBlock Text="Restaurant Details"
                                    Foreground="{ThemeResource ApplicationForegroundThemeBrush}"
                                    VerticalAlignment="Bottom" />
-                        <HyperlinkButton Content="search"
+                        <HyperlinkButton Content="Search with Bing"
                                          VerticalAlignment="Bottom"
                                          Padding="0,6,0,0"
                                          Margin="10,0,0,0"

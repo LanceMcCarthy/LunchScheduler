@@ -30,12 +30,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Contacts;
+using Windows.Storage;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using LunchScheduler.Data.Models;
-using LunchScheduler.Dialogs;
 using LunchScheduler.Helpers;
 using LunchScheduler.Views;
 using Template10.Common;
@@ -45,6 +45,7 @@ namespace LunchScheduler.ViewModels
 {
     public class AddLunchViewModel : ViewModelBase
     {
+        private readonly ApplicationDataContainer localSettings;
         private ObservableCollection<LunchAppointment> allAppointments;
         private LunchAppointment lunchToAdd;
         private bool isBusy;
@@ -53,7 +54,12 @@ namespace LunchScheduler.ViewModels
         public AddLunchViewModel()
         {
             if (DesignMode.DesignModeEnabled)
+            {
                 LunchToAdd = DesignTimeHelpers.GenerateSampleAppointment();
+                return;
+            }
+
+            localSettings = ApplicationData.Current.LocalSettings;
         }
 
         #region Properties
@@ -86,12 +92,23 @@ namespace LunchScheduler.ViewModels
             {
                 UpdateStatus("loading...");
 
-                var appts = parameter as ObservableCollection<LunchAppointment>;
+                // Load any existing appointments or new-up the list
 
+                var appts = parameter as ObservableCollection<LunchAppointment>;
                 allAppointments = appts ?? new ObservableCollection<LunchAppointment>();
 
-                return base.OnNavigatedToAsync(parameter, mode, state);
 
+                // If the user is returning from the RestaurantSearchPage, there will be a value stored
+                // Use the value to populate the appointment's location
+
+                var bingResultCompositeSetting = localSettings?.Values["SelectedBingResult"] as ApplicationDataCompositeValue;
+                if (bingResultCompositeSetting != null)
+                {
+                    LunchToAdd.Location.Name = bingResultCompositeSetting["title"] as string;
+                    LunchToAdd.Location.Address = bingResultCompositeSetting["link"] as string;
+                }
+
+                return base.OnNavigatedToAsync(parameter, mode, state);
             }
             catch (Exception ex)
             {
@@ -103,6 +120,15 @@ namespace LunchScheduler.ViewModels
             }
 
             return base.OnNavigatedToAsync(parameter, mode, state);
+        }
+
+        public override Task OnNavigatedFromAsync(IDictionary<string, object> pageState, bool suspending)
+        {
+            // reset this value
+            if (localSettings != null)
+                localSettings.Values["SelectedBingResult"] = null;
+
+            return base.OnNavigatedFromAsync(pageState, suspending);
         }
 
         /// <summary>
@@ -117,6 +143,11 @@ namespace LunchScheduler.ViewModels
 
                 if (LunchToAdd == null)
                     return;
+
+                // If there was no title set, let's do that for the user 
+                // so there is consistency in the UI and the layout looks good
+                if (string.IsNullOrEmpty(LunchToAdd.Title))
+                    LunchToAdd.Title = "Lunch Appointment";
 
                 allAppointments.Add(LunchToAdd);
 
@@ -178,9 +209,7 @@ namespace LunchScheduler.ViewModels
                     if (lunchGuest != null)
                     {
                         Debug.WriteLine("Contact exists in appointment");
-                        await
-                            new MessageDialog($"You already have {fullContact.FullName} listed as a guest").ShowAsync();
-
+                        await new MessageDialog($"You already have {fullContact.FullName} listed as a guest").ShowAsync();
                         return;
                     }
                 }
@@ -277,8 +306,6 @@ namespace LunchScheduler.ViewModels
 
         public void CancelLunchToAddButton_OnClick(object sender, RoutedEventArgs e)
         {
-
-
             if (BootStrapper.Current.NavigationService.CanGoBack)
                 BootStrapper.Current.NavigationService.GoBack();
         }
@@ -314,18 +341,9 @@ namespace LunchScheduler.ViewModels
                 LunchToAdd.LunchTime.Day, e.NewTime.Hours, e.NewTime.Minutes, 0, LunchToAdd.LunchTime.Offset);
         }
 
-        public async void SearchButton_OnClick(object sender, RoutedEventArgs e)
+        public void SearchButton_OnClick(object sender, RoutedEventArgs e)
         {
-            //var searchDialog = new RestaurantSearchDialog();
-            //await searchDialog.ShowAsync();
-
-            //if (searchDialog?.SelectedResult != null)
-            //{
-            //    LunchToAdd.Location.Name = searchDialog?.SelectedResult.Title;
-            //    LunchToAdd.Location.Address = searchDialog.SelectedResult.Link;
-            //}
-
-            BootStrapper.Current.NavigationService.Navigate(typeof(RestaurantSearchPage), LunchToAdd);
+            BootStrapper.Current.NavigationService.Navigate(typeof(RestaurantSearchPage));
         }
 
         #endregion
