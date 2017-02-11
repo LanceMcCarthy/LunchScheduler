@@ -1,0 +1,116 @@
+﻿<Page x:Class="LunchScheduler.Views.RestaurantSearchPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:LunchScheduler.Views"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+      xmlns:viewModels="using:LunchScheduler.ViewModels"
+      xmlns:bing="using:Microsoft.Toolkit.Uwp.Services.Bing"
+      mc:Ignorable="d">
+
+    <Page.DataContext>
+        <viewModels:RestaurantSearchViewModel x:Name="ViewModel" />
+    </Page.DataContext>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <controls:MasterDetailsView ItemsSource="{Binding SearchResults}"
+                                    SelectedItem="{Binding SelectedSearchResult, Mode=TwoWay}">
+            <controls:MasterDetailsView.ItemTemplate>
+                <DataTemplate x:DataType="bing:BingResult">
+                    <StackPanel Margin="0,10,0,10">
+                        <TextBlock Text="{x:Bind Title}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <!--<TextBlock Text="{x:Bind Link}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{x:Bind Summary}"
+                                   TextWrapping="Wrap" />-->
+                    </StackPanel>
+                </DataTemplate>
+            </controls:MasterDetailsView.ItemTemplate>
+            <controls:MasterDetailsView.DetailsTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" MinHeight="48" />
+                            <RowDefinition />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Text="{Binding Title}"
+                                   Style="{ThemeResource TitleTextBlockStyle}"
+                                   HorizontalAlignment="Center"
+                                   Margin="48,0"
+                                   VerticalAlignment="Center" />
+
+                        <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                   Text="{Binding Summary}"
+                                   TextWrapping="Wrap"
+                                   Grid.Row="1"
+                                   Margin="10" />
+
+                        <StackPanel Margin="10,0,10,10"
+                                    Grid.Row="2">
+                            <HyperlinkButton NavigateUri="{Binding Link}" />
+                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}"
+                                       Text="{Binding Published}" />
+                        </StackPanel>
+
+                    </Grid>
+                </DataTemplate>
+            </controls:MasterDetailsView.DetailsTemplate>
+            <controls:MasterDetailsView.NoSelectionContentTemplate>
+                <DataTemplate>
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <SymbolIcon RenderTransformOrigin=".5,.5"
+                                    Symbol="Zoom">
+                            <SymbolIcon.RenderTransform>
+                                <CompositeTransform ScaleX="2"
+                                                    ScaleY="2" />
+                            </SymbolIcon.RenderTransform>
+                        </SymbolIcon>
+                        <TextBlock Margin="0,12"
+                                   FontSize="24"
+                                   Text="no search results" />
+                    </StackPanel>
+                </DataTemplate>
+            </controls:MasterDetailsView.NoSelectionContentTemplate>
+        </controls:MasterDetailsView>
+
+        <CommandBar Grid.Row="1"
+                    VerticalContentAlignment="Top"
+                    HorizontalContentAlignment="Center">
+            <AppBarButton Icon="Zoom"
+                          Label="search"
+                          Click="{x:Bind ViewModel.SearchButton_OnClick}" />
+            <CommandBar.Content>
+                <TextBox PlaceholderText="enter search term"
+                         TextChanged="{x:Bind ViewModel.SearchBox_OnTextChanged}"
+                         MaxWidth="360"
+                         BorderBrush="Red"
+                         Margin="8,8,0,0" />
+            </CommandBar.Content>
+        </CommandBar>
+
+        <Grid x:Name="BusyOverlay"
+              Grid.RowSpan="2"
+              Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"
+              Background="{ThemeResource AppBarItemDisabledForegroundThemeBrush}">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <ProgressRing x:Name="BusyIndicator"
+                              IsActive="{Binding IsBusy}"
+                              Width="100"
+                              Height="100" />
+                <TextBlock Text="{x:Bind ViewModel.IsBusyMessage, Mode=OneWay}"
+                           HorizontalAlignment="Center"
+                           Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

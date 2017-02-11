@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using LunchScheduler.Data.Models;
+using Microsoft.Toolkit.Uwp.Services.Bing;
 
 namespace LunchScheduler.Helpers
 {
@@ -145,6 +146,16 @@ namespace LunchScheduler.Helpers
                         }
                     }
             };
+        }
+
+        public static ObservableCollection<BingResult> GenerateSampleBingResults()
+        {
+            var list = new ObservableCollection<BingResult>();
+            for (int i = 0; i < 10; i++)
+            {
+                list.Add(new BingResult { Title = $"Bing Result {i}", Published = DateTime.Now, Link = "http://www.bing.com", Summary = "Description of the search result and some other summary text will appear here."});
+            }
+            return list;
         }
     }
 }

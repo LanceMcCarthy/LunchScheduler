@@ -37,6 +37,7 @@ using Windows.UI.Xaml.Navigation;
 using LunchScheduler.Data.Models;
 using LunchScheduler.Dialogs;
 using LunchScheduler.Helpers;
+using LunchScheduler.Views;
 using Template10.Common;
 using Template10.Mvvm;
 
@@ -315,14 +316,16 @@ namespace LunchScheduler.ViewModels
 
         public async void SearchButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var searchDialog = new RestaurantSearchDialog();
-            await searchDialog.ShowAsync();
+            //var searchDialog = new RestaurantSearchDialog();
+            //await searchDialog.ShowAsync();
 
-            if (searchDialog?.SelectedResult != null)
-            {
-                LunchToAdd.Location.Name = searchDialog?.SelectedResult.Title;
-                LunchToAdd.Location.Address = searchDialog.SelectedResult.Link;
-            }
+            //if (searchDialog?.SelectedResult != null)
+            //{
+            //    LunchToAdd.Location.Name = searchDialog?.SelectedResult.Title;
+            //    LunchToAdd.Location.Address = searchDialog.SelectedResult.Link;
+            //}
+
+            BootStrapper.Current.NavigationService.Navigate(typeof(RestaurantSearchPage), LunchToAdd);
         }
 
         #endregion
